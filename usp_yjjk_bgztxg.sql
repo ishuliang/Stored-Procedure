@@ -28,39 +28,9 @@ BEGIN
     DECLARE 
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(1000) = NULL,
-        @ClientIP    NVARCHAR(50)  = NULL,
-        @LogParams   NVARCHAR(MAX) = N'',
         @bgzt_int    INT = NULL,
         @brlb_int    INT = NULL,
         @UpdateCount INT = 0  -- 新增：记录更新行数
-
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-
-    -- ==================== 拼接日志参数 ====================
-    SET @LogParams = 
-        '@brlb='''       + ISNULL(LTRIM(RTRIM(@brlb)),'') + '''' +
-        ',@patid='''     + ISNULL(LTRIM(RTRIM(@patid)),'') + '''' +
-        ',@curno='''     + ISNULL(LTRIM(RTRIM(@curno)),'') + '''' +
-        ',@ysdm='''      + ISNULL(LTRIM(RTRIM(@ysdm)),'') + '''' +
-        ',@bgzt='''      + ISNULL(LTRIM(RTRIM(@bgzt)),'') + '''' +
-        ',@txzt='''      + ISNULL(LTRIM(RTRIM(@txzt)),'') + '''' +
-        ',@jczt='''      + ISNULL(LTRIM(RTRIM(@jczt)),'') + '''' +
-        ',@bgdh='''      + ISNULL(LTRIM(RTRIM(@bgdh)),'') + '''' +
-        ',@bglx='''      + ISNULL(LTRIM(RTRIM(@bglx)),'') + '''' +
-        ',@logno='''     + ISNULL(LTRIM(RTRIM(@logno)),'') + '''' +
-        ',@lis='''       + ISNULL(LTRIM(RTRIM(@lis)),'') + '''' +
-        ',@jlzt='''      + ISNULL(LTRIM(RTRIM(@jlzt)),'') + '''' +
-        ',@yzlb_lcid=''' + ISNULL(LTRIM(RTRIM(@yzlb_lcid)),'') + '''' +
-        ',@zxks='''      + ISNULL(LTRIM(RTRIM(@zxks)),'') + '''' +
-        ',@zxbq='''      + ISNULL(LTRIM(RTRIM(@zxbq)),'') + '''' +
-        ',@zxczyh='''    + ISNULL(LTRIM(RTRIM(@zxczyh)),'') + '''' +
-        ',@zxsj='''      + ISNULL(CONVERT(VARCHAR(23),@zxsj,120),'NULL') + '''' +
-        ',@zfczyh='''    + ISNULL(LTRIM(RTRIM(@zfczyh)),'') + '''' +
-        ',@zfsj='''      + ISNULL(CONVERT(VARCHAR(23),@zfsj,120),'NULL') + '''' +
-        ',@txm='''       + ISNULL(LTRIM(RTRIM(@txm)),'') + ''''
 
     BEGIN TRY
         -- 基础校验
@@ -182,11 +152,12 @@ BEGIN
     END CATCH
 
     -- 写入日志
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_bgztxg', @LogParams, @ClientIP, GETDATE(), @Success, ISNULL(@UpdateCount,1), 
-         @ErrorMsg, ORIGINAL_LOGIN())
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_bgztxg', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @UpdateCount, 
+        @ErrorMsg = @ErrorMsg;
 END
 GO
 

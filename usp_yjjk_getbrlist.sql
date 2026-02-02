@@ -31,30 +31,8 @@ BEGIN
         @Rows        INT  = 0,
         @Success     BIT           = 1,
         @ErrorMsg    NVARCHAR(1000) = NULL,
-        @ClientIP    NVARCHAR(50)  = NULL,
-        @LogParams   NVARCHAR(MAX) = N'',
         @SQL         NVARCHAR(MAX) = N'',
         @Where       NVARCHAR(MAX) = N''
-
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-
-
-
-    SET @LogParams = 
-        'brlb='''       + ISNULL(NULLIF(LTRIM(RTRIM(@brlb)),''), '')       + '''' +
-        ';hzxm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@hzxm)),''), '')       + '''' +
-        ';ksdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@ksdm)),''), '')       + '''' +
-        ';bqdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@bqdm)),''), '')       + '''' +
-        ';cwdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@cwdm)),''), '')       + '''' +
-        ';rq1='''       + ISNULL(CONVERT(VARCHAR(23), @rq1, 120), '')     + '''' +
-        ';rq2='''       + ISNULL(CONVERT(VARCHAR(23), @rq2, 120), '')     + '''' +
-        ';fph='''       + ISNULL(NULLIF(LTRIM(RTRIM(@fph)),''), '')        + '''' +
-        ';codetype='''  + ISNULL(NULLIF(LTRIM(RTRIM(@codetype)),''), '')   + '''' +
-        ';zxksdm='''    + ISNULL(NULLIF(LTRIM(RTRIM(@zxksdm)),''), '')     + '''' +
-        ';jzbrbz='''    + ISNULL(CAST(@jzbrbz AS VARCHAR(10)), '')        + ''''
 
     -- ==================== 动态构建 WHERE 条件（安全防注入）===================
     IF @hzxm IS NOT NULL
@@ -117,11 +95,12 @@ BEGIN
     END CATCH
 
     -- ==================== 统一写入全局日志表 ====================
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_bgztxg', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
-         @ErrorMsg, ORIGINAL_LOGIN())
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getbrlist_sx', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO

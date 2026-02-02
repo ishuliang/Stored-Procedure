@@ -33,35 +33,10 @@ BEGIN
         @Success     BIT  = 1,
         @Rows        INT  = 0,
         @ErrorMsg    NVARCHAR(1000) = NULL,
-        @ClientIP    NVARCHAR(50)  = NULL,
-        @LogParams   NVARCHAR(MAX) = N'',
         @SQL         NVARCHAR(MAX) = N'',
         @Where       NVARCHAR(MAX) = N''
 
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-
     -- 防 1900-01-01
-    -- IF @rq1 = '1900-01-01 00:00:00' SET @rq1 = NULL
-    -- IF @rq2 = '1900-01-01 00:00:00' SET @rq2 = NULL
-
-    -- ==================== 日志参数（所有值带单引号，超级清晰）===================
-    SET @LogParams = 
-        'brlb='''      + ISNULL(CAST(@brlb AS VARCHAR(10)),'')     + '''' +
-        ';cureno='''    + ISNULL(NULLIF(LTRIM(RTRIM(@cureno)),''), '') + '''' +
-        ';cardno='''   + ISNULL(NULLIF(LTRIM(RTRIM(@cardno)),''), '') + '''' +
-        ';hzxm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@hzxm)),''), '')   + '''' +
-        ';ksdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@ksdm)),''), '')   + '''' +
-        ';bqdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@bqdm)),''), '')   + '''' +
-        ';zxksdm='''   + ISNULL(NULLIF(LTRIM(RTRIM(@zxksdm)),''), '') + '''' +
-        ';xmdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@xmdm)),''), '')   + '''' +
-        ';xmlb='''     + ISNULL(NULLIF(LTRIM(RTRIM(@xmlb)),''), '')   + '''' +
-        ';xmstatus=''' + ISNULL(NULLIF(LTRIM(RTRIM(@xmstatus)),''), '') + '''' +
-        ';rq1='''      + ISNULL(CONVERT(VARCHAR(23),@rq1,120), '')    + '''' +
-        ';rq2='''      + ISNULL(CONVERT(VARCHAR(23),@rq2,120), '')    + '''' +
-        ';jzbz='''     + ISNULL(CAST(@jzbz AS VARCHAR(10)), '')      + ''''
 
     -- ==================== 动态条件拼接 + 参数收集 ====================
     IF NULLIF(LTRIM(RTRIM(@hzxm)), '') IS NOT NULL    BEGIN SET @Where += ' AND vp.PatientName LIKE ''%'' + @hzxm + ''%'''      END
@@ -142,11 +117,12 @@ AND dd.ServiceProviderType in (''PACS'',''LIS'')
     END CATCH
 
     -- ==================== 统一日志 ====================
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_kkd_getApplyList', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
-         @ErrorMsg, ORIGINAL_LOGIN())
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getsqdlist', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO

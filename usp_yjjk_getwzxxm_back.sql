@@ -139,22 +139,7 @@ BEGIN
     DECLARE 
         @Rows      INT  = 0,
         @Success   BIT  = 1,
-        @ErrorMsg  NVARCHAR(1000) = NULL,
-        @ClientIP  NVARCHAR(50)  = NULL,
-        @LogParams NVARCHAR(MAX) = NULL;
-
-    SET @LogParams = 
-        'brlb='''     + CAST(@brlb AS NVARCHAR(10)) +''''+
-        ',patid='''   + ISNULL(@patid, '') +''''+
-        ',curno='''   + ISNULL(@curno, '') +''''+
-        ',rq1='''     + ISNULL(CONVERT(NVARCHAR(23), @rq1_dt, 120), @rq1) +''''+
-        ',rq2='''     + ISNULL(CONVERT(NVARCHAR(23), @rq2_dt, 120), @rq2) +''''+
-        ',sqdxh='''   + ISNULL(@sqdxh, '') +''''+
-        ',yexh='''    + ISNULL(@yexh, '');
-
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID;
+        @ErrorMsg  NVARCHAR(1000) = NULL;
 
     BEGIN TRY
         IF @brlb IS NULL OR @brlb <> 3
@@ -245,10 +230,13 @@ BEGIN
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg;
     END CATCH
 
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_getwzxxm', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, @ErrorMsg, ORIGINAL_LOGIN());
+    -- ==================== 统一写入全局日志表 ====================
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getwzxxm', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO

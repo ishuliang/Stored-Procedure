@@ -25,19 +25,8 @@ BEGIN
         @Rows      INT  = 0,
         @Success   BIT  = 1,
         @ErrorMsg  NVARCHAR(1000) = NULL,
-        @ClientIP  NVARCHAR(50)  = NULL,
-        @LogParams NVARCHAR(MAX) = NULL,
         @SQL         NVARCHAR(MAX) = N'',
         @Where       NVARCHAR(MAX) = N''
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-    -- 拼装日志参数
-    SET @LogParams = 
-            '@brlb='     + ISNULL(CAST(@brlb     AS NVARCHAR(10)), '') +
-            ',@codetype=' + ISNULL(CAST(@codetype     AS NVARCHAR(10)), '')+
-            ',@code='''     + ISNULL(@code, '') +''''
 
     BEGIN TRY
         IF @brlb IS NULL OR @brlb <> 3
@@ -118,10 +107,12 @@ BEGIN
 
     -- 统一日志出口
     LogAndExit:
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_getbrxx', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, @ErrorMsg, ORIGINAL_LOGIN())
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getbrxx', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO
