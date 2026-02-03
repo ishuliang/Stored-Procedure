@@ -37,7 +37,36 @@ BEGIN
 
     DECLARE 
         @Success     BIT  = 1,
-        @ErrorMsg    NVARCHAR(MAX) = NULL
+        @ErrorMsg    NVARCHAR(MAX) = NULL,
+        @ClientIP    NVARCHAR(50)  = NULL,
+        @LogParams   NVARCHAR(MAX) = NULL
+
+    -- 获取调用者IP
+    SELECT @ClientIP = client_net_address 
+    FROM sys.dm_exec_connections 
+    WHERE session_id = @@SPID
+
+    -- ==================== 统一拼装日志参数（键=值; 一目了然）===================
+    SET @LogParams = 
+        'syscode='  + ISNULL(@syscode,'NULL') +
+        ';cflb='     + ISNULL(@cflb,'NULL') +
+        ';patid='    + ISNULL(@patid,'NULL') +
+        ';cfxh='     + ISNULL(@cfxh,'NULL') +
+        ';xmlbdm='   + ISNULL(@xmlbdm,'NULL') +
+        ';xmlbmc='   + ISNULL(@xmlbmc,'NULL') +
+        ';xmdm='     + ISNULL(@xmdm,'NULL') +
+        ';xmmc='     + ISNULL(@xmmc,'NULL') +
+        ';xmjg='     + ISNULL(LEFT(@xmjg,100) + CASE WHEN LEN(@xmjg)>100 THEN '...' ELSE '' END,'NULL') +  -- 结果太长截取前100
+        ';ksdm='     + ISNULL(@ksdm,'NULL') +
+        ';ysdm='     + ISNULL(@ysdm,'NULL') +
+        ';wcsj='     + ISNULL(CONVERT(NVARCHAR(23),@wcsj,120),'NULL') +
+        ';xmdw='     + ISNULL(@xmdw,'NULL') +
+        ';jglx='     + ISNULL(@jglx,'NULL') +
+        ';jgckz='    + ISNULL(@jgckz,'NULL') +
+        ';gdbz='     + ISNULL(@gdbz,'NULL') +
+        ';dyxh='     + ISNULL(@dyxh,'NULL') +
+        ';applyno='  + ISNULL(@applyno,'NULL') +
+        ';crbz='     + ISNULL(CAST(@crbz AS NVARCHAR(10)),'NULL')
 
     BEGIN TRY
 
@@ -72,12 +101,11 @@ BEGIN
     END CATCH
 
     -- ==================== 统一写入全局日志表 ====================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_yjjgfb', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = 1, 
-        @ErrorMsg = @ErrorMsg;
+    INSERT INTO dbo.InterfaceCallLog
+        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
+    VALUES
+        ('usp_yjjk_yjjgfb', @LogParams, @ClientIP, GETDATE(), @Success, 1, 
+         @ErrorMsg, ORIGINAL_LOGIN())
 
 END
 GO

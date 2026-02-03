@@ -24,11 +24,25 @@ BEGIN
         @Success     BIT           = 1,
         @Rows        INT           = 0,
         @ErrorMsg    NVARCHAR(1000) = NULL,
+        @ClientIP    NVARCHAR(50)  = NULL,
+        @LogParams   NVARCHAR(MAX) = N'',
         @ExecutedSQL NVARCHAR(MAX) = N'',
         @SQL         NVARCHAR(MAX) = N'',
         @Where       NVARCHAR(MAX) = N'',
         @Where2      NVARCHAR(MAX) = N'',
         @Params      NVARCHAR(MAX) = N'@patid VARCHAR(50), @cureno VARCHAR(50), @sqdh INT'
+
+    -- 获取调用者IP
+    SELECT @ClientIP = client_net_address 
+    FROM sys.dm_exec_connections 
+    WHERE session_id = @@SPID
+
+    -- ==================== 日志参数（所有值带单引号，超级清晰）===================
+    SET @LogParams = 
+        'brlb='''   + ISNULL(@brlb,'')     + '''' +
+        ',patid=''' + ISNULL(@patid,'')    + '''' +
+        ',cureno='''+ ISNULL(@cureno,'')   + '''' +
+        ',sqdh='''  + ISNULL(CAST(@sqdh AS VARCHAR(20)),'') + ''''
 
     -- ==================== 动态条件（参数化，永不报错）===================
     IF @patid  IS NOT NULL SET @Where += ' AND vp.PatientCode = @patid'
@@ -95,12 +109,11 @@ BEGIN
     END CATCH
 
     -- ==================== 统一写入全局日志表 ====================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_getsqdxx', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @Rows, 
-        @ErrorMsg = @ErrorMsg;
+    INSERT INTO dbo.InterfaceCallLog
+        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
+    VALUES
+        ('usp_yjjk_getsqdxx', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
+         @ErrorMsg, ORIGINAL_LOGIN())
 
 END
 GO

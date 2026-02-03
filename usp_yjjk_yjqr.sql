@@ -35,9 +35,34 @@ BEGIN
         @Success     BIT  = 1,
         @Rows        INT  = 0,
         @ErrorMsg    NVARCHAR(MAX) = NULL,
+        @ClientIP    NVARCHAR(50)  = NULL,
+        @LogParams   NVARCHAR(MAX) = NULL,
         @isLisOrPacs NVARCHAR(4)   =  '2',
         @state       NVARCHAR(4)   =   '',
         @state_name NVARCHAR(50)   =   ''
+    -- 获取调用者IP
+    SELECT @ClientIP = client_net_address 
+    FROM sys.dm_exec_connections 
+    WHERE session_id = @@SPID
+
+    -- ==================== 拼装统一日志参数（键=值; 超级清晰）===================
+    SET @LogParams = 
+        'brlb='''     + ISNULL(@brlb,'') +''''+
+        ',patid='''   + ISNULL(@patid,'') +''''+
+        ',curno='''   + ISNULL(@curno,'') +''''+
+        ',zxksdm='''  + ISNULL(@zxksdm,'') +''''+
+        ',zxysdm='''  + ISNULL(@zxysdm,'') +''''+
+        ',logno='''   + ISNULL(@logno,'') +''''+
+        ',applyno=''' + ISNULL(@applyno,'') +''''+
+        ',groupno=''' + ISNULL(@groupno,'') +''''+
+        ',xmlb='''    + ISNULL(@xmlb,'') +''''+
+        ',xmdm='''    + ISNULL(@xmdm,'') +''''+
+        ',xmdj='''    + ISNULL(@xmdj,'') +''''+
+        ',xmsl='''    + ISNULL(@xmsl,'') +''''+
+        ',xmstatus='''+ ISNULL(@xmstatus,'') +''''+
+        ',sfflag='''  + ISNULL(@sfflag,'') +''''+
+        ',bgdh='''    + ISNULL(@bgdh,'') +''''+
+        ',bglx='''    + ISNULL(@bglx,'')+''''
 
     BEGIN TRY
 
@@ -104,13 +129,11 @@ BEGIN
     END CATCH
 
     -- ==================== 统一写入日志表（所有接口共用）===================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_yjqr', 
-        @ParamNames = '@brlb,@patid,@curno,@zxksdm,@zxysdm,@logno,@applyno,@groupno,@xmlb,@xmdm,@xmdj,@xmsl,@xmstatus,@sfflag,@bgdh,@bglx',
-        @ParamValues = CONCAT(@brlb,',',@patid,',',@curno,',',@zxksdm,',',@zxysdm,',',@logno,',',@applyno,',',@groupno,',',@xmlb,',',@xmdm,',',@xmdj,',',@xmsl,',',@xmstatus,',',@sfflag,',',@bgdh,',',@bglx),
-        @Success = @Success, 
-        @ReturnRows = @Rows, 
-        @ErrorMsg = @ErrorMsg;
+    INSERT INTO dbo.InterfaceCallLog
+        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
+    VALUES
+        ('usp_yjjk_yjqr', @LogParams, @ClientIP, GETDATE(), @Success, 1, 
+         @ErrorMsg, ORIGINAL_LOGIN())
 
 END
 GO

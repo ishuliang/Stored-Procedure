@@ -4,21 +4,13 @@ ALTER PROCEDURE dbo.usp_yjjk_bgztxg
     @patid      VARCHAR(100) = NULL,  -- 病人唯一标识
     @curno      VARCHAR(100) = NULL,  -- 病人就诊流水号
     @ysdm       VARCHAR(100) = NULL,  -- 报告医生工号
-    @bgzt       VARCHAR(10)  = NULL,  -- 报告状态（原INT→VARCHAR）
-    @txzt       VARCHAR(10)  = NULL,  -- 图像状态（原INT→VARCHAR）
-    @jczt       VARCHAR(100) = NULL,  -- 检查状态
+    @bgzt       VARCHAR(10)  = NULL,  -- 报告状态
+    @txzt       VARCHAR(10)  = NULL,  -- 图像状态
+    @jczt       VARCHAR(100) = NULL,  -- 检查状态 20签收——对应贾维斯的登记，30入库，40初审，50终审，60发布——对应贾维斯的出报告
     @bgdh       VARCHAR(100) = NULL,  -- 报告单号
     @bglx       VARCHAR(100) = NULL,  -- 报告类型
     @logno      VARCHAR(100) = NULL,  -- 明细序号集合
     @lis        VARCHAR(16)  = NULL,  -- 系统代码
-    @jlzt       VARCHAR(10)  = NULL,  -- 记录状态（原INT→VARCHAR）
-    @yzlb_lcid  VARCHAR(100) = NULL,  -- 执行医嘱流程id
-    @zxks       VARCHAR(100) = NULL,  -- 执行科室代码
-    @zxbq       VARCHAR(100) = NULL,  -- 执行病区代码
-    @zxczyh     VARCHAR(100) = NULL,  -- 执行操作员号
-    @zxsj       VARCHAR(100) = NULL,  -- 执行时间
-    @zfczyh     VARCHAR(100) = NULL,  -- 作废操作员号
-    @zfsj       VARCHAR(100) = NULL,  -- 作废时间
     @txm        VARCHAR(100) = NULL   -- 条形码
 )
 AS
@@ -46,16 +38,13 @@ BEGIN
             RAISERROR('报告单号不能为空', 16, 1)
 
         -- 报告状态校验
-        IF @bgzt IS NULL OR LTRIM(RTRIM(@bgzt)) = ''
-            RAISERROR(N'报告状态(@bgzt)不能为空', 16, 1);
-        IF ISNUMERIC(@bgzt) = 0
-            RAISERROR(N'报告状态(@bgzt)必须为数字！传入值：%s', 16, 1, @bgzt)
-        SET @bgzt_int = CAST(@bgzt AS INT)
-        IF @bgzt_int NOT IN (0, 1)
-            RAISERROR(N'当前仅支持 @bgzt = 0 (登记/插入) 或 1 (审核/更新)，传入值：%d', 16, 1, @bgzt_int);
+        IF @jczt IS NULL OR LTRIM(RTRIM(@jczt)) = ''
+            RAISERROR(N'检查状态(@jczt)不能为空', 16, 1);
+        IF ISNUMERIC(@jczt) = 0
+            RAISERROR(N'检查状态(@jczt)必须为数字！传入值：%s', 16, 1, @jczt)
 
         -- ==================== 业务处理：插入逻辑（无修改） ====================
-        IF @bgzt_int = 0
+        IF @jczt = 20
         BEGIN
             -- LIS 系统：按 bar_code 防重
             IF UPPER(@lis) = 'LIS'
@@ -63,27 +52,14 @@ BEGIN
                 IF @txm IS NULL OR LTRIM(RTRIM(@txm)) = ''
                     RAISERROR(N'LIS系统登记时条形码(@txm)不能为空', 16, 1);
                 IF EXISTS (SELECT 1 FROM dbo.interface_state  WHERE bar_code = @txm )
-                    RAISERROR(N'该条形码 %s 已存在登记记录，请勿重复插入', 16, 1, @txm);
+                    RAISERROR(N'该条形码 %s 已存在签收记录，请勿重复插入', 16, 1, @txm);
 					
-				INSERT INTO dbo.interface_state (
-					patient_code,
-					state,
-					state_name,
-					update_time,
-					bar_code,
-					param_type,
-					service_provider_type,
-					report_no
-				)
+				INSERT INTO dbo.interface_state (patient_code,state,state_name,update_time,bar_code,param_type,service_provider_type,report_no)
 				VALUES (
-					@patid,
-					0,
-					N'登记',
-					GETDATE(),
-					CASE WHEN UPPER(@lis) = 'LIS' THEN @txm ELSE NULL END,
-					CASE WHEN UPPER(@lis) = 'LIS' THEN '3' ELSE NULL END,
-					@lis,
-					@bgdh
+					@patid,0,N'登记',GETDATE(),
+                    @txm,
+                    '3',
+                    'WN',@bgdh
 				);
             END
             ELSE
@@ -97,7 +73,7 @@ BEGIN
         END
 
         -- ==================== 核心修改：更新逻辑（按@lis区分条件） ====================
-        ELSE IF @bgzt_int = 1
+        ELSE IF @jczt = 60
         BEGIN
             -- 1. LIS系统：按bar_code更新，且必须传txm
             IF UPPER(@lis) = 'LIS'

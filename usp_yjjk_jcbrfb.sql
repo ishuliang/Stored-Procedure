@@ -49,10 +49,7 @@ BEGIN
 
         -- ==================== 参数必填校验 ====================
         IF ISNULL(LTRIM(RTRIM(@repno)),'') = ''      RAISERROR('repno 报告单号不能为空！',16,1)
-
-        IF EXISTS(SELECT 1 FROM VocaPatient WHERE IS_State >= 5 AND PatientCode = @patid)
-            RAISERROR('体检系统已开始总检,不能发布!如需修改请电话联系体检中心!',16,1)
-
+        
         -- ==================== 业务处理===================
         -- 根据报告单号来修改对应的状态，如果没有就返回报错
         UPDATE dbo.interface_state

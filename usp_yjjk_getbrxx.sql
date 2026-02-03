@@ -1,15 +1,4 @@
-USE [sxzlhems]
-GO
-
-
--- =============================================
--- 读取病人基本信息
--- =============================================
-IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.usp_yjjk_getbrxx') AND type = 'P')
-    DROP PROCEDURE dbo.usp_yjjk_getbrxx
-GO
-
-CREATE PROCEDURE dbo.usp_yjjk_getbrxx
+ALTER PROCEDURE dbo.usp_yjjk_getbrxx
 (
     @brlb     INT         = NULL,      -- 病人类别：3=体检
     @codetype INT         = NULL,      -- 号码类型

@@ -22,8 +22,15 @@ BEGIN
     DECLARE 
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(MAX) = '成功',
+        @ClientIP    NVARCHAR(50)  = NULL,
+        @LogParams   NVARCHAR(MAX) = NULL,
         @ExecutedSQL NVARCHAR(MAX) = NULL,
         @patientCode VARCHAR(50)
+
+    -- 获取调用者IP
+    SELECT @ClientIP = client_net_address 
+    FROM sys.dm_exec_connections 
+    WHERE session_id = @@SPID
 
     -- 把 NULL 转成空字符串，保持和老接口完全兼容
     SET @repno   = ISNULL(LTRIM(RTRIM(@repno)), '')
@@ -74,12 +81,11 @@ BEGIN
     END CATCH
 
     -- ==================== 统一写入全局日志表 ====================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_jg_huishou', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = 1, 
-        @ErrorMsg = @ErrorMsg;
+    INSERT INTO dbo.InterfaceCallLog
+        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
+    VALUES
+        ('usp_yjjk_jg_huishou', @LogParams, @ClientIP, GETDATE(), @Success, 1, 
+         @ErrorMsg, ORIGINAL_LOGIN())
 
 END
 GO

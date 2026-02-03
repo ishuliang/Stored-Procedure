@@ -1,10 +1,4 @@
-USE [interface_agent_sxzl]   
-GO
-
-IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.usp_yjjk_getwzxxm') AND type = 'P')
-    DROP PROCEDURE dbo.usp_yjjk_getwzxxm
-GO
-
+-- 获取病人未执行医嘱项目
 ALTER PROCEDURE dbo.usp_yjjk_getwzxxm
 (
     @brlb     INT           = NULL,        
@@ -97,7 +91,7 @@ BEGIN
             ''''                                                    AS ClinicDesc,
             ''''                                                    AS ghxh,
             ''''                                                    AS SerialNo,
-            ''-1''                                           AS ApplyNo,
+            ''-1''                                                  AS ApplyNo,
             ISNULL(dictOperate.Number, '''')                        AS OperatorCode,
             ISNULL(dictOperate.UserName, '''')                      AS OperatorName
         FROM VocaPatient vp
