@@ -1,15 +1,5 @@
-USE [HEMS_V5]
-GO
 
--- =============================================
--- 康科德接口：获取体检申请单列表（支持多条件查询）
--- 
--- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getsqdlist', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.usp_yjjk_getsqdlist
-GO
-
-CREATE PROCEDURE dbo.usp_yjjk_getsqdlist
+ALTER PROCEDURE dbo.usp_yjjk_getsqdlist
 (
     @brlb      INT          = NULL,   -- 1=门诊 2=住院 3=体检
     @cureno     VARCHAR(100) = NULL,   -- 就诊流水号（当前住院的首页序号）
@@ -21,8 +11,8 @@ CREATE PROCEDURE dbo.usp_yjjk_getsqdlist
     @xmdm      VARCHAR(100) = NULL,   -- 项目代码
     @xmlb      VARCHAR(100) = NULL,   -- 项目类别：0临床项目 1收费项目 2药品项目
     @xmstatus  VARCHAR(100) = NULL,   -- 项目状态：0未处理 1已确认
-    @rq1       DATETIME     = NULL,   -- 开始日期（包含）
-    @rq2       DATETIME     = NULL,   -- 结束日期（包含）
+    @rq1       VARCHAR(100) = NULL,   -- 开始日期（包含）
+    @rq2       VARCHAR(100) = NULL,   -- 结束日期（包含）
     @jzbz      INT          = NULL    -- 急诊标志：0=全部 1=急诊
 )
 AS
@@ -33,40 +23,30 @@ BEGIN
         @Success     BIT  = 1,
         @Rows        INT  = 0,
         @ErrorMsg    NVARCHAR(1000) = NULL,
-        @ClientIP    NVARCHAR(50)  = NULL,
-        @LogParams   NVARCHAR(MAX) = N'',
         @SQL         NVARCHAR(MAX) = N'',
-        @Where       NVARCHAR(MAX) = N''
+        @Where       NVARCHAR(MAX) = N'',
+        @rq1_dt  DATETIME2 = NULL,
+        @rq2_dt  DATETIME2 = NULL
 
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-
-    -- 防 1900-01-01
-    -- IF @rq1 = '1900-01-01 00:00:00' SET @rq1 = NULL
-    -- IF @rq2 = '1900-01-01 00:00:00' SET @rq2 = NULL
-
-    -- ==================== 日志参数（所有值带单引号，超级清晰）===================
-    SET @LogParams = 
-        'brlb='''      + ISNULL(CAST(@brlb AS VARCHAR(10)),'')     + '''' +
-        ';cureno='''    + ISNULL(NULLIF(LTRIM(RTRIM(@cureno)),''), '') + '''' +
-        ';cardno='''   + ISNULL(NULLIF(LTRIM(RTRIM(@cardno)),''), '') + '''' +
-        ';hzxm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@hzxm)),''), '')   + '''' +
-        ';ksdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@ksdm)),''), '')   + '''' +
-        ';bqdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@bqdm)),''), '')   + '''' +
-        ';zxksdm='''   + ISNULL(NULLIF(LTRIM(RTRIM(@zxksdm)),''), '') + '''' +
-        ';xmdm='''     + ISNULL(NULLIF(LTRIM(RTRIM(@xmdm)),''), '')   + '''' +
-        ';xmlb='''     + ISNULL(NULLIF(LTRIM(RTRIM(@xmlb)),''), '')   + '''' +
-        ';xmstatus=''' + ISNULL(NULLIF(LTRIM(RTRIM(@xmstatus)),''), '') + '''' +
-        ';rq1='''      + ISNULL(CONVERT(VARCHAR(23),@rq1,120), '')    + '''' +
-        ';rq2='''      + ISNULL(CONVERT(VARCHAR(23),@rq2,120), '')    + '''' +
-        ';jzbz='''     + ISNULL(CAST(@jzbz AS VARCHAR(10)), '')      + ''''
 
     -- ==================== 动态条件拼接 + 参数收集 ====================
     IF NULLIF(LTRIM(RTRIM(@hzxm)), '') IS NOT NULL    BEGIN SET @Where += ' AND vp.PatientName LIKE ''%'' + @hzxm + ''%'''      END
-    IF @rq1 IS NOT NULL                               BEGIN SET @Where += ' AND vpfi.RegisterTime >= @rq1'                      END
-    IF @rq2 IS NOT NULL                               BEGIN SET @Where += ' AND vpfi.RegisterTime <= @rq2'                      END
+    IF @rq1 IS NOT NULL AND LTRIM(RTRIM(@rq1)) <> ''
+    BEGIN 
+        SET @rq1_dt   = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vpfi.RegisterTime >= @rq1_dt'                      
+    END
+    IF @rq2 IS NOT NULL AND LTRIM(RTRIM(@rq2)) <> ''
+    BEGIN 
+        SET @rq2_dt   = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq2, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vpfi.RegisterTime <= @rq2_dt'                      
+    END
     IF NULLIF(LTRIM(RTRIM(@zxksdm)), '') IS NOT NULL  BEGIN SET @Where += ' AND dd.InterfaceCode1 = @zxksdm'                    END
     IF NULLIF(LTRIM(RTRIM(@xmdm)), '') IS NOT NULL    BEGIN SET @Where += ' AND dfi.InterfaceCode1 = @xmdm'                     END
     IF NULLIF(LTRIM(RTRIM(@cureno)), '') IS NOT NULL   BEGIN SET @Where += ' AND vp.PatientCode = @cureno'                       END
@@ -118,17 +98,14 @@ AND dd.ServiceProviderType in (''PACS'',''LIS'')
 
     BEGIN TRY
         EXEC sp_executesql @SQL, 
-            N'@hzxm VARCHAR(100), @rq1 DATETIME, @rq2 DATETIME, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100), @cardno VARCHAR(100)',
+            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100), @cardno VARCHAR(100)',
             @hzxm=@hzxm,
-            @rq1=@rq1,
-            @rq2=@rq2,
+            @rq1_dt=@rq1_dt,
+            @rq2_dt=@rq2_dt,
             @zxksdm=@zxksdm,
             @xmdm=@xmdm,
             @cureno=@cureno,
             @cardno=@cardno
-               
-              
-
         SET @Rows = @@ROWCOUNT
 
         
@@ -141,12 +118,13 @@ AND dd.ServiceProviderType in (''PACS'',''LIS'')
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg
     END CATCH
 
-    -- ==================== 统一日志 ====================
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_kkd_getApplyList', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
-         @ErrorMsg, ORIGINAL_LOGIN())
+  -- 写入日志
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getsqdlist', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO

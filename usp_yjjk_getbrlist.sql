@@ -1,23 +1,12 @@
-USE [HEMS_V5]
-GO
-
--- =============================================
--- 获取在院病人信息列表
--- 日志已全局统一，所有值带单引号，超级清晰！
--- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getbrlist_sx', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.usp_yjjk_getbrlist_sx
-GO
-
-CREATE PROCEDURE dbo.usp_yjjk_getbrlist_sx
+ALTER PROCEDURE dbo.usp_yjjk_getbrlist
 (
     @brlb       VARCHAR(100) = NULL,   -- 病人类别
     @hzxm       VARCHAR(100) = NULL,   -- 病人姓名
     @ksdm       VARCHAR(100) = NULL,   -- 科室代码
     @bqdm       VARCHAR(100) = NULL,   -- 病区代码
     @cwdm       VARCHAR(100) = NULL,   -- 床位代码
-    @rq1        DATETIME     = NULL,   -- 开始日期（包含）
-    @rq2        DATETIME     = NULL,   -- 结束日期（包含）
+    @rq1        VARCHAR(100) = NULL,   -- 开始日期
+    @rq2        VARCHAR(100) = NULL,   -- 结束日期
     @fph        VARCHAR(100) = NULL,   -- 发票号
     @codetype   VARCHAR(100) = NULL,   -- 卡类型：0磁卡，1体检号
     @zxksdm     VARCHAR(100) = NULL,   -- 执行科室代码
@@ -31,39 +20,31 @@ BEGIN
         @Rows        INT  = 0,
         @Success     BIT           = 1,
         @ErrorMsg    NVARCHAR(1000) = NULL,
-        @ClientIP    NVARCHAR(50)  = NULL,
-        @LogParams   NVARCHAR(MAX) = N'',
         @SQL         NVARCHAR(MAX) = N'',
-        @Where       NVARCHAR(MAX) = N''
-
-    -- 获取调用者IP
-    SELECT @ClientIP = client_net_address 
-    FROM sys.dm_exec_connections 
-    WHERE session_id = @@SPID
-
-
-
-    SET @LogParams = 
-        'brlb='''       + ISNULL(NULLIF(LTRIM(RTRIM(@brlb)),''), '')       + '''' +
-        ';hzxm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@hzxm)),''), '')       + '''' +
-        ';ksdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@ksdm)),''), '')       + '''' +
-        ';bqdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@bqdm)),''), '')       + '''' +
-        ';cwdm='''      + ISNULL(NULLIF(LTRIM(RTRIM(@cwdm)),''), '')       + '''' +
-        ';rq1='''       + ISNULL(CONVERT(VARCHAR(23), @rq1, 120), '')     + '''' +
-        ';rq2='''       + ISNULL(CONVERT(VARCHAR(23), @rq2, 120), '')     + '''' +
-        ';fph='''       + ISNULL(NULLIF(LTRIM(RTRIM(@fph)),''), '')        + '''' +
-        ';codetype='''  + ISNULL(NULLIF(LTRIM(RTRIM(@codetype)),''), '')   + '''' +
-        ';zxksdm='''    + ISNULL(NULLIF(LTRIM(RTRIM(@zxksdm)),''), '')     + '''' +
-        ';jzbrbz='''    + ISNULL(CAST(@jzbrbz AS VARCHAR(10)), '')        + ''''
+        @Where       NVARCHAR(MAX) = N'',
+        @rq1_dt  DATETIME2 = NULL,
+        @rq2_dt  DATETIME2 = NULL
+ 
 
     -- ==================== 动态构建 WHERE 条件（安全防注入）===================
-    IF @hzxm IS NOT NULL
+    IF @hzxm IS NOT NULL AND LTRIM(RTRIM(@hzxm)) <> ''
         SET @Where += ' AND vp.PatientName = @hzxm'
-    IF @rq1 IS NOT NULL
-        SET @Where += ' AND vp.RegisterTime >= @rq1'
-    IF @rq2 IS NOT NULL
-        SET @Where += ' AND vp.RegisterTime <= @rq2'
-
+    IF @rq1 IS NOT NULL AND LTRIM(RTRIM(@rq1)) <> ''
+    BEGIN
+        SET @rq1_dt  = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vp.RegisterTime >= @rq1_dt'
+    END
+    IF @rq2 IS NOT NULL AND LTRIM(RTRIM(@rq2)) <> ''
+    BEGIN
+        SET @rq2_dt  = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq2, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vp.RegisterTime <= @rq2_dt'
+    END
     IF @zxksdm is NOT NULL AND LTRIM(RTRIM(@zxksdm)) <> ''
         SET @Where += ' AND dd.interfaceCode1 = @zxksdm'
 
@@ -101,10 +82,10 @@ BEGIN
 
         -- 执行查询（第一结果集：业务数据）
         EXEC sp_executesql @SQL, 
-             N'@hzxm VARCHAR(100), @rq1 DATETIME, @rq2 DATETIME, @zxksdm VARCHAR(100)',
+             N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100)',
              @hzxm = @hzxm,
-             @rq1 = @rq1,
-             @rq2 = @rq2,
+             @rq1_dt = @rq1_dt,
+             @rq2_dt = @rq2_dt,
              @zxksdm = @zxksdm
         
         SET @Rows = @@ROWCOUNT
@@ -116,12 +97,13 @@ BEGIN
 
     END CATCH
 
-    -- ==================== 统一写入全局日志表 ====================
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_bgztxg', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
-         @ErrorMsg, ORIGINAL_LOGIN())
+  -- 写入日志
+    EXEC dbo.usp_sys_WriteInterfaceLog 
+        @ProcName = 'usp_yjjk_getbrlist', 
+        @Params = NULL, 
+        @Success = @Success, 
+        @ReturnRows = @Rows, 
+        @ErrorMsg = @ErrorMsg;
 
 END
 GO

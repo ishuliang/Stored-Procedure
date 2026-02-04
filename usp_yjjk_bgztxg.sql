@@ -87,7 +87,6 @@ BEGIN
                     state       = 1,
                     state_name  = N'已审核',
                     update_time = GETDATE(),
-                    report_no    = @bgdh,
                     param_type  = '3'  -- LIS系统固定param_type为3
                 WHERE 
                     bar_code = @txm;
