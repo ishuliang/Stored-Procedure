@@ -59,7 +59,7 @@ BEGIN
 					@patid,0,N'登记',GETDATE(),
                     @txm,
                     '3',
-                    'WN',@bgdh
+                    @lis,@bgdh
 				);
             END
             ELSE

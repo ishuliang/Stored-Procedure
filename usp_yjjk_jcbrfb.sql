@@ -47,7 +47,12 @@ BEGIN
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(MAX) = NULL,
 		@UpdateCount INT = 0  -- 新增：记录更新行数
-
+        -- 根据patient_code来修改报告单号（必传）
+        UPDATE dbo.interface_state
+                SET report_no = @repno
+                WHERE patient_code = @patid;
+        SET @UpdateCount = @@ROWCOUNT;
+        
         SELECT 'T' AS BZ, '' AS errmsg
     
 

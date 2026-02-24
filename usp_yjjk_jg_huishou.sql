@@ -30,10 +30,10 @@ BEGIN
 
 
         -- 获取病人编码用于总检判断
-        SELECT TOP 1 @patientCode = vp.PatientCode
-        FROM VocaPatient vp
-        INNER JOIN VocaPatientFeeItem vpfi ON vp.ID_Patient = vpfi.ID_Patient
-        WHERE vpfi.applyId = @repno
+        -- SELECT TOP 1 @patientCode = vp.PatientCode
+        -- FROM VocaPatient vp
+        -- INNER JOIN VocaPatientFeeItem vpfi ON vp.ID_Patient = vpfi.ID_Patient
+        -- WHERE vpfi.applyId = @repno
 
         -- ==================== 总检状态校验 ====================
         IF EXISTS(SELECT 1 FROM VocaPatient WHERE IS_State >= 5 AND PatientCode = @patientCode)
@@ -51,7 +51,7 @@ BEGIN
         SET @UpdateCount = @@ROWCOUNT;
         IF @UpdateCount != 1
             RAISERROR('没有找到该报告数据！', 16, 1)
-
+        DELETE FROM dbo.ReportData WHERE applyno = @repno;  -- applyno对应报告单号（repno）
         SELECT 'T' AS BZ, '' AS errmsg
 
 

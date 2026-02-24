@@ -19,7 +19,7 @@ ALTER PROCEDURE dbo.usp_yjjk_yjjgfb
     @gdbz     VARCHAR(100) = NULL,      -- 高低标志
     @dyxh     VARCHAR(100) = NULL,      -- 打印序号
     @applyno  VARCHAR(100) = NULL,      -- 报告单号（必传）
-    @crbz     INT          = NULL      -- 传染标志
+    @crbz     VARCHAR(100) = NULL      -- 传染标志
 )
 AS
 BEGIN
@@ -28,20 +28,44 @@ BEGIN
         @ErrorMsg VARCHAR(MAX) = NULL,    -- 完整错误信息
         @ReturnRows INT = 0,
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
+    
 
 
+    
+     BEGIN TRY
+        -- ==================== 直接插入数据到ReportData表 ====================
+        DELETE FROM ReportData   WHERE applyno = @applyno AND xmdm = @xmdm;
+        
+        INSERT INTO ReportData (
+            syscode, cflb, patid, cfxh, xmlbdm, xmlbmc,
+            xmdm, xmmc, xmjg, ksdm, ysdm, wcsj,
+            xmdw, jglx, jgckz, gdbz, dyxh, applyno, crbz
+        )
+        VALUES (
+            @syscode, @cflb, @patid, @cfxh, @xmlbdm, @xmlbmc,
+            @xmdm, @xmmc, @xmjg, @ksdm, @ysdm, @wcsj,
+            @xmdw, @jglx, @jgckz, @gdbz, @dyxh, @applyno, @crbz
+        );
 
-    SELECT 'T' AS BZ, '' AS errmsg
+        -- 获取插入的行数
+        SET @ReturnRows = @@ROWCOUNT;
 
-    -- ==================== 统一写入全局日志表 ====================
-      -- 写入日志
-    EXEC dbo.usp_sys_WriteInterfaceLog 
+        -- 返回成功标识和空错误信息
+        SELECT 'T' AS BZ, '' AS errmsg;
+
+    END TRY
+    BEGIN CATCH
+
+        -- ==================== 统一写入全局日志表 ====================
+        EXEC dbo.usp_sys_WriteInterfaceLog 
         @ProcName = 'usp_yjjk_yjjgfb', 
         @Params = NULL, 
         @Success = @Success, 
-        @ReturnRows = ReturnRows, 
+        @ReturnRows = @ReturnRows, 
         @ErrorMsg = @ErrorMsg;
-
+         -- 返回失败标识和错误信息
+        SELECT 'F' AS BZ, @ErrorMsg AS errmsg;
+    END CATCH
 END
 GO
 
