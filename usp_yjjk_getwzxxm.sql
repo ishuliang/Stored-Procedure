@@ -14,11 +14,12 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
-    @rq1_dt  DATETIME2 = TRY_CAST(
+        @LogId     INT = 0,
+        @rq1_dt  DATETIME2 = TRY_CAST(
                            RTRIM(
                              STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
                            ) AS DATETIME2),
-    @rq2_dt  DATETIME2 = TRY_CAST(
+        @rq2_dt  DATETIME2 = TRY_CAST(
                            RTRIM(
                              STUFF(STUFF(STUFF(@rq2, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
                            ) AS DATETIME2);
@@ -28,6 +29,11 @@ BEGIN
         @Rows      INT  = 0,
         @Success   BIT  = 1,
         @ErrorMsg  NVARCHAR(1000) = NULL;
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_getwzxxm_log (brlb, patid, curno, rq1, rq2, sqdxh, yexh)
+    VALUES (@brlb, @patid, @curno, @rq1, @rq2, @sqdxh, @yexh);
+    SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
         IF @brlb IS NULL OR @brlb <> 3
@@ -119,12 +125,11 @@ BEGIN
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg;
     END CATCH
 
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_getwzxxm', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @Rows, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_getwzxxm_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

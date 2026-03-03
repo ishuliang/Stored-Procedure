@@ -18,8 +18,9 @@ ALTER PROCEDURE dbo.usp_yjjk_getsqdlist
 AS
 BEGIN
     SET NOCOUNT ON;
-    
+
     DECLARE 
+        @LogId       INT = 0,
         @Success     BIT  = 1,
         @Rows        INT  = 0,
         @ErrorMsg    NVARCHAR(1000) = NULL,
@@ -27,6 +28,11 @@ BEGIN
         @Where       NVARCHAR(MAX) = N'',
         @rq1_dt  DATETIME2 = NULL,
         @rq2_dt  DATETIME2 = NULL
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_getsqdlist_log (brlb, cureno, cardno, hzxm, ksdm, bqdm, zxksdm, xmdm, xmlb, xmstatus, rq1, rq2, jzbz)
+    VALUES (@brlb, @cureno, @cardno, @hzxm, @ksdm, @bqdm, @zxksdm, @xmdm, @xmlb, @xmstatus, @rq1, @rq2, @jzbz);
+    SET @LogId = SCOPE_IDENTITY();
 
 
     -- ==================== 动态条件拼接 + 参数收集 ====================
@@ -118,13 +124,11 @@ AND dd.ServiceProviderType in (''PACS'',''LIS'')
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg
     END CATCH
 
-  -- 写入日志
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_getsqdlist', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @Rows, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_getsqdlist_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

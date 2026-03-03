@@ -3,7 +3,6 @@ GO
 
 -- =============================================
 -- 获取体检影像申请单信息（PACS专用）
--- 已升级：统一日志 + 带单引号Params + 可复制执行语句 + 防1900 + 永不报错
 -- =============================================
 IF OBJECT_ID('dbo.usp_yjjk_getsqdxx', 'P') IS NOT NULL
     DROP PROCEDURE dbo.usp_yjjk_getsqdxx
@@ -21,6 +20,7 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
+        @LogId       INT = 0,
         @Success     BIT           = 1,
         @Rows        INT           = 0,
         @ErrorMsg    NVARCHAR(1000) = NULL,
@@ -31,6 +31,11 @@ BEGIN
         @Where       NVARCHAR(MAX) = N'',
         @Where2      NVARCHAR(MAX) = N'',
         @Params      NVARCHAR(MAX) = N'@patid VARCHAR(50), @cureno VARCHAR(50), @sqdh INT'
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_getsqdxx_log (brlb, patid, cureno, sqdh)
+    VALUES (@brlb, @patid, @cureno, @sqdh);
+    SET @LogId = SCOPE_IDENTITY();
 
     -- 获取调用者IP
     SELECT @ClientIP = client_net_address 
@@ -108,12 +113,11 @@ BEGIN
         
     END CATCH
 
-    -- ==================== 统一写入全局日志表 ====================
-    INSERT INTO dbo.InterfaceCallLog
-        (ProcName, Params, ClientIP, CallTime, Success, ReturnRows, ErrorMessage, ExecUser)
-    VALUES
-        ('usp_yjjk_getsqdxx', @LogParams, @ClientIP, GETDATE(), @Success, @Rows, 
-         @ErrorMsg, ORIGINAL_LOGIN())
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_getsqdxx_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

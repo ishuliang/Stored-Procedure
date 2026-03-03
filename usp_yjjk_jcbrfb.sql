@@ -44,20 +44,23 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
+        @LogId       INT = 0,
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(MAX) = NULL,
 		@UpdateCount INT = 0  -- 新增：记录更新行数
 
-        SELECT 'T' AS BZ, '' AS errmsg
-    
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_jcbrfb_log (repno, reqno, syxh, patid, blh, cardno, hzxm, sex, age, sjksdm, sjksmc, bqdm, bqmc, cwdm, sjysdm, sjysxm, sjrq, replb, replbmc, reprq, xtbz, jcbw, jcysdm, jcysxm, jcksdm, jcksmc, isly, wjbz, instname, techno, cyrq, shys, crbz, shysdm, bbjsrq, memo)
+    VALUES (@repno, @reqno, @syxh, @patid, @blh, @cardno, @hzxm, @sex, @age, @sjksdm, @sjksmc, @bqdm, @bqmc, @cwdm, @sjysdm, @sjysxm, @sjrq, @replb, @replbmc, @reprq, @xtbz, @jcbw, @jcysdm, @jcysxm, @jcksdm, @jcksmc, @isly, @wjbz, @instname, @techno, @cyrq, @shys, @crbz, @shysdm, @bbjsrq, @memo);
+    SET @LogId = SCOPE_IDENTITY();
 
-    -- ==================== 统一写入全局日志表 ====================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_jcbrfb', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @UpdateCount, 
-        @ErrorMsg = @ErrorMsg;
+    SELECT 'T' AS BZ, '' AS errmsg
+    
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_jcbrfb_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

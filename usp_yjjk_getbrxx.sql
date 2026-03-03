@@ -11,11 +11,17 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
+        @LogId     INT = 0,
         @Rows      INT  = 0,
         @Success   BIT  = 1,
         @ErrorMsg  NVARCHAR(1000) = NULL,
         @SQL         NVARCHAR(MAX) = N'',
         @Where       NVARCHAR(MAX) = N''
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_getbrxx_log (brlb, codetype, code, yebz, cybz)
+    VALUES (@brlb, @codetype, @code, @yebz, @cybz);
+    SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
         IF @brlb IS NULL OR @brlb <> 3
@@ -96,12 +102,11 @@ BEGIN
 
     -- 统一日志出口
     LogAndExit:
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_getbrxx', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @Rows, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_getbrxx_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

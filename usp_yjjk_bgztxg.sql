@@ -18,11 +18,17 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
+        @LogId       INT = 0,
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(1000) = NULL,
         @bgzt_int    INT = NULL,
         @brlb_int    INT = NULL,
         @UpdateCount INT = 0  -- 新增：记录更新行数
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_bgztxg_log (brlb, patid, curno, ysdm, bgzt, txzt, jczt, bgdh, bglx, logno, lis, txm)
+    VALUES (@brlb, @patid, @curno, @ysdm, @bgzt, @txzt, @jczt, @bgdh, @bglx, @logno, @lis, @txm);
+    SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
         -- 基础校验
@@ -126,13 +132,11 @@ BEGIN
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg
     END CATCH
 
-    -- 写入日志
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_bgztxg', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @UpdateCount, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_bgztxg_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 END
 GO
 

@@ -21,23 +21,25 @@ ALTER PROCEDURE dbo.usp_yjjk_yjqr
 AS
 BEGIN
     SET NOCOUNT ON;
-    
+
     DECLARE 
+        @LogId    INT = 0,
         @ErrorMsg VARCHAR(MAX) = NULL,    -- 完整错误信息
         @ReturnRows INT = 0,
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
 
-
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_yjqr_log (brlb, patid, curno, zxksdm, zxysdm, logno, applyno, groupno, xmlb, xmdm, xmdj, xmsl, xmstatus, sfflag, bgdh, bglx)
+    VALUES (@brlb, @patid, @curno, @zxksdm, @zxysdm, @logno, @applyno, @groupno, @xmlb, @xmdm, @xmdj, @xmsl, @xmstatus, @sfflag, @bgdh, @bglx);
+    SET @LogId = SCOPE_IDENTITY();
 
     SELECT 'T' AS BZ, '' AS errmsg
-    -- ==================== 统一写入日志表（所有接口共用）===================
-    -- 写入日志
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_yjqr', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = ReturnRows, 
-        @ErrorMsg = @ErrorMsg;
+
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_yjqr_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

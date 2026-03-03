@@ -24,23 +24,25 @@ ALTER PROCEDURE dbo.usp_yjjk_yjjgfb
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE 
+        @LogId    INT = 0,
         @ErrorMsg VARCHAR(MAX) = NULL,    -- 完整错误信息
         @ReturnRows INT = 0,
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
 
-
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_yjjgfb_log (syscode, cflb, patid, cfxh, xmlbdm, xmlbmc, xmdm, xmmc, xmjg, ksdm, ysdm, wcsj, xmdw, jglx, jgckz, gdbz, dyxh, applyno, crbz)
+    VALUES (@syscode, @cflb, @patid, @cfxh, @xmlbdm, @xmlbmc, @xmdm, @xmmc, @xmjg, @ksdm, @ysdm, @wcsj, @xmdw, @jglx, @jgckz, @gdbz, @dyxh, @applyno, @crbz);
+    SET @LogId = SCOPE_IDENTITY();
 
     SELECT 'T' AS BZ, '' AS errmsg
 
-    -- ==================== 统一写入全局日志表 ====================
-      -- 写入日志
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_yjjgfb', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = ReturnRows, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_yjjgfb_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO

@@ -9,12 +9,18 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE 
+        @LogId       INT = 0,
         @Success     BIT  = 1,
         @ErrorMsg    NVARCHAR(MAX) = '成功',
         @LogParams   NVARCHAR(MAX) = NULL,
         @ExecutedSQL NVARCHAR(MAX) = NULL,
         @patientCode VARCHAR(50),
         @UpdateCount INT = 0
+
+    -- 插入日志记录
+    INSERT INTO dbo.usp_yjjk_jg_huishou_log (repno, replb, syscode)
+    VALUES (@repno, @replb, @syscode);
+    SET @LogId = SCOPE_IDENTITY();
 
     -- 把 NULL 转成空字符串，保持和老接口完全兼容
     SET @repno   = ISNULL(LTRIM(RTRIM(@repno)), '')
@@ -62,13 +68,11 @@ BEGIN
         SELECT 'F' AS BZ, @ErrorMsg AS errmsg
     END CATCH
 
-    -- ==================== 统一写入全局日志表 ====================
-    EXEC dbo.usp_sys_WriteInterfaceLog 
-        @ProcName = 'usp_yjjk_jg_huishou', 
-        @Params = NULL, 
-        @Success = @Success, 
-        @ReturnRows = @UpdateCount, 
-        @ErrorMsg = @ErrorMsg;
+    -- 更新日志记录结果
+    UPDATE dbo.usp_yjjk_jg_huishou_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
 
 END
 GO
