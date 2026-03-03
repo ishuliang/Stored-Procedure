@@ -1,4 +1,3 @@
-
 ALTER PROCEDURE dbo.usp_yjjk_yjjgfb
 (
     @syscode  VARCHAR(100) = NULL,      -- 系统代码：'RIS'、'LIS'
@@ -19,7 +18,7 @@ ALTER PROCEDURE dbo.usp_yjjk_yjjgfb
     @gdbz     VARCHAR(100) = NULL,      -- 高低标志
     @dyxh     VARCHAR(100) = NULL,      -- 打印序号
     @applyno  VARCHAR(100) = NULL,      -- 报告单号（必传）
-    @crbz     INT          = NULL      -- 传染标志
+    @crbz     VARCHAR(100) = NULL      -- 传染标志
 )
 AS
 BEGIN
@@ -30,13 +29,40 @@ BEGIN
         @ErrorMsg VARCHAR(MAX) = NULL,    -- 完整错误信息
         @ReturnRows INT = 0,
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
-
+    
     -- 插入日志记录
     INSERT INTO dbo.usp_yjjk_yjjgfb_log (syscode, cflb, patid, cfxh, xmlbdm, xmlbmc, xmdm, xmmc, xmjg, ksdm, ysdm, wcsj, xmdw, jglx, jgckz, gdbz, dyxh, applyno, crbz)
     VALUES (@syscode, @cflb, @patid, @cfxh, @xmlbdm, @xmlbmc, @xmdm, @xmmc, @xmjg, @ksdm, @ysdm, @wcsj, @xmdw, @jglx, @jgckz, @gdbz, @dyxh, @applyno, @crbz);
     SET @LogId = SCOPE_IDENTITY();
 
-    SELECT 'T' AS BZ, '' AS errmsg
+    BEGIN TRY
+        -- ==================== 直接插入数据到ReportData表 ====================
+        DELETE FROM ReportData WHERE applyno = @applyno AND xmdm = @xmdm;
+        
+        INSERT INTO ReportData (
+            syscode, cflb, patid, cfxh, xmlbdm, xmlbmc,
+            xmdm, xmmc, xmjg, ksdm, ysdm, wcsj,
+            xmdw, jglx, jgckz, gdbz, dyxh, applyno, crbz
+        )
+        VALUES (
+            @syscode, @cflb, @patid, @cfxh, @xmlbdm, @xmlbmc,
+            @xmdm, @xmmc, @xmjg, @ksdm, @ysdm, @wcsj,
+            @xmdw, @jglx, @jgckz, @gdbz, @dyxh, @applyno, @crbz
+        );
+
+        -- 获取插入的行数
+        SET @ReturnRows = @@ROWCOUNT;
+
+        -- 返回成功标识和空错误信息
+        SELECT 'T' AS BZ, '' AS errmsg;
+
+    END TRY
+    BEGIN CATCH
+        SET @Success = 0
+        SET @ErrorMsg = ERROR_MESSAGE()
+        -- 返回失败标识和错误信息
+        SELECT 'F' AS BZ, @ErrorMsg AS errmsg;
+    END CATCH
 
     -- 更新日志记录结果
     UPDATE dbo.usp_yjjk_yjjgfb_log 
