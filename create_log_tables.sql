@@ -320,5 +320,29 @@ GO
 PRINT '表 usp_yjjk_yjqr_log 创建成功！'
 GO
 
+-- =============================================
+-- 3. usp_yjjk_getbrxx 日志表
+-- =============================================
+IF OBJECT_ID('dbo.up_interface_RIS_WN_Getbrxx_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_Getbrxx_log
+GO
+
+CREATE TABLE dbo.up_interface_RIS_WN_Getbrxx_log
+(
+    id           INT IDENTITY(1,1) PRIMARY KEY,
+    brlb         VARCHAR(100),
+    codetype     VARCHAR(100),
+    code         VARCHAR(100),
+    yebz         VARCHAR(100),
+    cybz         VARCHAR(100),
+    result       VARCHAR(10),
+    errormessage VARCHAR(MAX),
+    create_time  DATETIME DEFAULT GETDATE()
+)
+GO
+
 PRINT '所有日志表创建完成！'
 GO
+
+
+
