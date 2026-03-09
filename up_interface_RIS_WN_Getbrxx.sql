@@ -24,8 +24,8 @@ BEGIN
     SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
-        IF @brlb IS NULL OR @brlb <> 3
-            RAISERROR('病人类别不正确！必须为3（体检）', 16, 1)
+        IF @brlb IS NULL OR (@brlb <> 3 AND @brlb <> 9)
+            RAISERROR('病人类别不正确！必须为3（体检）或9', 16, 1)
 
         IF ISNULL(LTRIM(RTRIM(@code)), '') = ''
             RAISERROR('code不能为空！', 16, 1)    
@@ -46,7 +46,7 @@ BEGIN
                     ( 1 ) WITH TIES * 
                     FROM
                     (SELECT
-                        3 AS WardOrReg,      -- 动态返回病人类别
+                        @brlb AS WardOrReg,      -- 动态返回病人类别
                         vp.patientcode          AS HospNo,
                         vp.patientcode           AS PatientID,
                         vp.patientcode          AS CureNo,
@@ -55,8 +55,15 @@ BEGIN
                         ''''                      AS Age1,
                         ''岁''                    AS AgeUnit,
                         ''''                      AS AgeUnit1,
-                        ISNULL(vp.SEX, '''')      AS Sex,
-                        ''tijianke''              AS ApplyDept,
+                        CASE 
+                            WHEN vp.SEX IS NULL OR vp.SEX = '''' THEN ''''
+                            WHEN vp.SEX = ''1'' THEN ''男''
+                            WHEN vp.SEX = ''2'' THEN ''女''
+                            ELSE vp.SEX
+                        END AS Sex,
+                        
+                        ''632''                   AS ApplyDeptCode,
+                        ''山西省肿瘤体检中心''              AS ApplyDept,
                         ''''                      AS Ward,
                         ''''                      AS BedNo,
                         ISNULL(vp.IdentityCard, '''') AS CardNo,
@@ -87,7 +94,8 @@ BEGIN
                         ORDER BY ROW_NUMBER ( ) OVER ( PARTITION BY PatientID ORDER BY ( SELECT NULL ) )'
                         
         EXEC sp_executesql @SQL, 
-                N'@code NVARCHAR(50)',
+                N'@brlb INT, @code NVARCHAR(50)',
+                @brlb = @brlb,
                 @code = @code
 
         SET @Rows = @@ROWCOUNT
