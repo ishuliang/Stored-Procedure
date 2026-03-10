@@ -1,10 +1,10 @@
 ALTER PROCEDURE dbo.up_interface_RIS_WN_Getbrxx
 (
-    @brlb     INT         = NULL,      -- 病人类别：3=体检
-    @codetype INT         = NULL,      -- 号码类型
+    @brlb     NVARCHAR(50) = NULL,      -- 病人类别：3=体检，2是超声
+    @codetype NVARCHAR(50) = NULL,      -- 号码类型，1、4是patientcode，10是身份证，2是条形码
     @code     NVARCHAR(50)= NULL,    -- 查询号码
-	@yebz     NVARCHAR(50)= NULL,     -- 婴儿标志  
-	@cybz     NVARCHAR(50)= NULL     -- 是否查出病人
+	@yebz     NVARCHAR(50)= NULL,     -- 婴儿标志，无用
+	@cybz     NVARCHAR(50)= NULL     -- 是否查出病人，无用
 )
 AS
 BEGIN
@@ -16,7 +16,8 @@ BEGIN
         @Success   BIT  = 1,
         @ErrorMsg  NVARCHAR(1000) = NULL,
         @SQL         NVARCHAR(MAX) = N'',
-        @Where       NVARCHAR(MAX) = N''
+        @Where       NVARCHAR(MAX) = N'',
+        @Debug       BIT         = 1  -- 调试模式，0为关闭，1为开启
 
     -- 插入日志记录
     INSERT INTO dbo.up_interface_RIS_WN_Getbrxx_log (brlb, codetype, code, yebz, cybz)
@@ -27,7 +28,7 @@ BEGIN
         IF @brlb IS NULL OR (@brlb <> 3 AND @brlb <> 2)
             RAISERROR('病人类别不正确！必须为3（体检）或2', 16, 1)
 
-        IF ISNULL(LTRIM(RTRIM(@code)), '') = ''
+        IF NULLIF(LTRIM(RTRIM(@code)), '') IS NULL
             RAISERROR('code不能为空！', 16, 1)    
 
         IF @codetype IS NULL
@@ -92,7 +93,20 @@ BEGIN
                     '+ @Where
                     + N') t 
                         ORDER BY ROW_NUMBER ( ) OVER ( PARTITION BY PatientID ORDER BY ( SELECT NULL ) )'
-                        
+
+        IF @Debug = 1
+        BEGIN
+            DECLARE @DebugSQL NVARCHAR(MAX) = @SQL
+    
+            -- 简单参数替换（注意：仅用于调试，生产环境关闭）
+            SET @DebugSQL = REPLACE(@DebugSQL, '@brlb',  ISNULL('''' + @brlb + '''' , 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@codetype',  ISNULL('''' + @codetype + '''' , 'NULL'))
+
+            SET @DebugSQL = REPLACE(@DebugSQL, '@code',   ISNULL('''' + @code + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@yebz',   ISNULL('''' + @yebz + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@cybz',   ISNULL('''' + @cybz + '''', 'NULL'))
+            PRINT @DebugSQL
+        END                
         EXEC sp_executesql @SQL, 
                 N'@brlb INT, @code NVARCHAR(50)',
                 @brlb = @brlb,
