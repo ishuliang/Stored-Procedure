@@ -1,0 +1,136 @@
+
+ALTER PROCEDURE dbo.up_interface_RIS_WN_getsqdlist
+(
+    @brlb      INT          = NULL,   -- 1=门诊 2=住院 3=体检
+    @cureno     VARCHAR(100) = NULL,   -- 就诊流水号（当前住院的首页序号）
+    @cardno    VARCHAR(100) = NULL,   -- 卡号 / 体检号
+    @hzxm      VARCHAR(100) = NULL,   -- 病人姓名（支持模糊）
+    @ksdm      VARCHAR(100) = NULL,   -- 科室代码
+    @bqdm      VARCHAR(100) = NULL,   -- 病区代码
+    @zxksdm    VARCHAR(100) = NULL,   -- 执行科室代码（如检验科、放射科）
+    @xmdm      VARCHAR(100) = NULL,   -- 项目代码
+    @xmlb      VARCHAR(100) = NULL,   -- 项目类别：0临床项目 1收费项目 2药品项目
+    @xmstatus  VARCHAR(100) = NULL,   -- 项目状态：0未处理 1已确认
+    @rq1       VARCHAR(100) = NULL,   -- 开始日期（包含）
+    @rq2       VARCHAR(100) = NULL,   -- 结束日期（包含）
+    @jzbz      INT          = NULL    -- 急诊标志：0=全部 1=急诊
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE 
+        @LogId       INT = 0,
+        @Success     BIT  = 1,
+        @Rows        INT  = 0,
+        @ErrorMsg    NVARCHAR(1000) = NULL,
+        @SQL         NVARCHAR(MAX) = N'',
+        @Where       NVARCHAR(MAX) = N'',
+        @rq1_dt  DATETIME2 = NULL,
+        @rq2_dt  DATETIME2 = NULL
+
+    -- 插入日志记录
+    INSERT INTO dbo.up_interface_RIS_WN_getsqdlist_log (brlb, cureno, cardno, hzxm, ksdm, bqdm, zxksdm, xmdm, xmlb, xmstatus, rq1, rq2, jzbz)
+    VALUES (@brlb, @cureno, @cardno, @hzxm, @ksdm, @bqdm, @zxksdm, @xmdm, @xmlb, @xmstatus, @rq1, @rq2, @jzbz);
+    SET @LogId = SCOPE_IDENTITY();
+
+
+    -- ==================== 动态条件拼接 + 参数收集 ====================
+    IF NULLIF(LTRIM(RTRIM(@hzxm)), '') IS NOT NULL    BEGIN SET @Where += ' AND vp.PatientName LIKE ''%'' + @hzxm + ''%'''      END
+    IF @rq1 IS NOT NULL AND LTRIM(RTRIM(@rq1)) <> ''
+    BEGIN 
+        SET @rq1_dt   = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vpfi.RegisterTime >= @rq1_dt'                      
+    END
+    IF @rq2 IS NOT NULL AND LTRIM(RTRIM(@rq2)) <> ''
+    BEGIN 
+        SET @rq2_dt   = TRY_CAST(
+                                   RTRIM(
+                                     STUFF(STUFF(STUFF(@rq2, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
+                                   ) AS DATETIME2)
+        SET @Where += ' AND vpfi.RegisterTime <= @rq2_dt'                      
+    END
+    IF NULLIF(LTRIM(RTRIM(@zxksdm)), '') IS NOT NULL  BEGIN SET @Where += ' AND dd.InterfaceCode1 = @zxksdm'                    END
+    IF NULLIF(LTRIM(RTRIM(@xmdm)), '') IS NOT NULL    BEGIN SET @Where += ' AND dfi.InterfaceCode1 = @xmdm'                     END
+    IF NULLIF(LTRIM(RTRIM(@cureno)), '') IS NOT NULL   BEGIN SET @Where += ' AND vp.PatientCode = @cureno'                       END
+    IF NULLIF(LTRIM(RTRIM(@cardno)), '') IS NOT NULL  BEGIN SET @Where += ' AND vp.PatientCode = @cardno'                       END
+
+
+
+    -- ==================== 主查询SQL ====================
+    SET @SQL = N'
+SELECT
+    ''3''                                         AS PIDAuthority,
+    vp.PatientCode                                AS PIDNumber,
+    vp.PatientCode                                AS VisitNumber,
+    ''THIS4''                                     AS OrderPlacer,
+    ''''                                          AS PlacerOrderType,
+    ''''                                          AS PlacerOrderNumber,
+    ''''                                          AS PlacerOrderStatus,
+    vpfi.applyId                                  AS 申请单号,
+    vp.PatientCode                                AS 病员号,
+    ''''                                          AS 病人卡号,
+    vp.PatientName                                AS 病人姓名,
+    vp.Sex                                        AS 病人性别,
+    ISNULL(vp.Age,0)                              AS 病人年龄,
+    ''''                                          AS 病人科室,
+    ''''                                          AS 病人病区,
+    ''''                                          AS 病人床号,
+    ISNULL(dictOperate.Number, '''')             AS 主治医生,
+    vpfi.FeeItemName                              AS 检查项目,
+    ''''                                          AS 检查状态,
+    ''''                                          AS 结算状态,
+    vpfi.RegisterTime                             AS 请求日期,
+    ''0''                                         AS 门急诊标志,
+    vpfi.FeeItemName                              AS 申请单名称,
+    ''''                                          AS 收费状态,
+    vpfi.applyId                                  AS 条形码,
+    ''''                                          AS 临床路径标志
+FROM VocaPatient vp
+INNER JOIN VocaPatientFeeItem vpfi ON vp.ID_Patient = vpfi.ID_Patient
+INNER JOIN DictFeeItem dfi         ON dfi.ID_FeeItem = vpfi.ID_FeeItem
+INNER JOIN DictDepart dd           ON dd.ID_Depart = vpfi.ID_Depart
+LEFT  JOIN DictUser dictOperate    ON dictOperate.ID_User = vpfi.ID_Operate
+WHERE vp.IS_State < 6
+AND dd.ServiceProviderType in (''PACS'',''LIS'')
+  AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
+  AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
+  AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
+  AND ISNULL(vpfi.IS_Suspend,'''') <> ''2'' '
+  + ISNULL(@Where, N'')
+
+    BEGIN TRY
+        EXEC sp_executesql @SQL, 
+            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100), @cardno VARCHAR(100)',
+            @hzxm=@hzxm,
+            @rq1_dt=@rq1_dt,
+            @rq2_dt=@rq2_dt,
+            @zxksdm=@zxksdm,
+            @xmdm=@xmdm,
+            @cureno=@cureno,
+            @cardno=@cardno
+        SET @Rows = @@ROWCOUNT
+
+        
+
+
+    END TRY
+    BEGIN CATCH
+        SET @Success = 0
+        SET @ErrorMsg = ERROR_MESSAGE()
+        SELECT 'F' AS BZ, @ErrorMsg AS errmsg
+    END CATCH
+
+    -- 更新日志记录结果
+    UPDATE dbo.up_interface_RIS_WN_getsqdlist_log 
+    SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
+        errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
+    WHERE id = @LogId;
+
+END
+GO
+
+PRINT '存储过程 up_interface_RIS_WN_getsqdlist 创建成功！'

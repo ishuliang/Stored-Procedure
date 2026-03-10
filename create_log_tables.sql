@@ -5,13 +5,13 @@
 -- =============================================
 
 -- =============================================
--- 1. usp_yjjk_bgztxg 日志表
+-- 1. up_interface_RIS_WN_bgztxg 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_bgztxg_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_bgztxg_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_bgztxg_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_bgztxg_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_bgztxg_log
+CREATE TABLE dbo.up_interface_RIS_WN_bgztxg_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -32,17 +32,17 @@ CREATE TABLE dbo.usp_yjjk_bgztxg_log
 )
 GO
 
-PRINT '表 usp_yjjk_bgztxg_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_bgztxg_log 创建成功！'
 GO
 
 -- =============================================
--- 2. usp_yjjk_getbrlist 日志表
+-- 2. up_interface_RIS_WN_getbrlist 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getbrlist_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_getbrlist_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_getbrlist_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_getbrlist_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_getbrlist_log
+CREATE TABLE dbo.up_interface_RIS_WN_getbrlist_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -62,17 +62,17 @@ CREATE TABLE dbo.usp_yjjk_getbrlist_log
 )
 GO
 
-PRINT '表 usp_yjjk_getbrlist_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_getbrlist_log 创建成功！'
 GO
 
 -- =============================================
--- 3. usp_yjjk_getbrxx 日志表
+-- 3. up_interface_RIS_WN_getbrxx 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getbrxx_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_getbrxx_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_getbrxx_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_getbrxx_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_getbrxx_log
+CREATE TABLE dbo.up_interface_RIS_WN_getbrxx_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -86,17 +86,17 @@ CREATE TABLE dbo.usp_yjjk_getbrxx_log
 )
 GO
 
-PRINT '表 usp_yjjk_getbrxx_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_getbrxx_log 创建成功！'
 GO
 
 -- =============================================
--- 4. usp_yjjk_getsqdlist 日志表
+-- 4. up_interface_RIS_WN_getsqdlist 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getsqdlist_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_getsqdlist_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_getsqdlist_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_getsqdlist_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_getsqdlist_log
+CREATE TABLE dbo.up_interface_RIS_WN_getsqdlist_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -118,17 +118,17 @@ CREATE TABLE dbo.usp_yjjk_getsqdlist_log
 )
 GO
 
-PRINT '表 usp_yjjk_getsqdlist_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_getsqdlist_log 创建成功！'
 GO
 
 -- =============================================
--- 5. usp_yjjk_getsqdxx 日志表
+-- 5. up_interface_RIS_WN_getsqdxx 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getsqdxx_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_getsqdxx_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_getsqdxx_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_getsqdxx_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_getsqdxx_log
+CREATE TABLE dbo.up_interface_RIS_WN_getsqdxx_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -141,17 +141,17 @@ CREATE TABLE dbo.usp_yjjk_getsqdxx_log
 )
 GO
 
-PRINT '表 usp_yjjk_getsqdxx_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_getsqdxx_log 创建成功！'
 GO
 
 -- =============================================
--- 6. usp_yjjk_getwzxxm 日志表
+-- 6. up_interface_RIS_WN_getwzxxm 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getwzxxm_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_getwzxxm_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_getwzxxm_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_getwzxxm_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_getwzxxm_log
+CREATE TABLE dbo.up_interface_RIS_WN_getwzxxm_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -167,17 +167,17 @@ CREATE TABLE dbo.usp_yjjk_getwzxxm_log
 )
 GO
 
-PRINT '表 usp_yjjk_getwzxxm_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_getwzxxm_log 创建成功！'
 GO
 
 -- =============================================
--- 7. usp_yjjk_jcbrfb 日志表
+-- 7. up_interface_RIS_WN_jcbrfb 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_jcbrfb_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_jcbrfb_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_jcbrfb_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_jcbrfb_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_jcbrfb_log
+CREATE TABLE dbo.up_interface_RIS_WN_jcbrfb_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     repno        VARCHAR(100),
@@ -222,17 +222,17 @@ CREATE TABLE dbo.usp_yjjk_jcbrfb_log
 )
 GO
 
-PRINT '表 usp_yjjk_jcbrfb_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_jcbrfb_log 创建成功！'
 GO
 
 -- =============================================
--- 8. usp_yjjk_jg_huishou 日志表
+-- 8. up_interface_RIS_WN_jg_huishou 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_jg_huishou_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_jg_huishou_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_jg_huishou_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_jg_huishou_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_jg_huishou_log
+CREATE TABLE dbo.up_interface_RIS_WN_jg_huishou_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     repno        VARCHAR(100),
@@ -244,17 +244,17 @@ CREATE TABLE dbo.usp_yjjk_jg_huishou_log
 )
 GO
 
-PRINT '表 usp_yjjk_jg_huishou_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_jg_huishou_log 创建成功！'
 GO
 
 -- =============================================
--- 9. usp_yjjk_yjjgfb 日志表
+-- 9. up_interface_RIS_WN_yjjgfb 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_yjjgfb_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_yjjgfb_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_yjjgfb_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_yjjgfb_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_yjjgfb_log
+CREATE TABLE dbo.up_interface_RIS_WN_yjjgfb_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     syscode      VARCHAR(100),
@@ -282,17 +282,17 @@ CREATE TABLE dbo.usp_yjjk_yjjgfb_log
 )
 GO
 
-PRINT '表 usp_yjjk_yjjgfb_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_yjjgfb_log 创建成功！'
 GO
 
 -- =============================================
--- 10. usp_yjjk_yjqr 日志表
+-- 10. up_interface_RIS_WN_yjqr 日志表
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_yjqr_log', 'U') IS NOT NULL
-    DROP TABLE dbo.usp_yjjk_yjqr_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_yjqr_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_yjqr_log
 GO
 
-CREATE TABLE dbo.usp_yjjk_yjqr_log
+CREATE TABLE dbo.up_interface_RIS_WN_yjqr_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     brlb         VARCHAR(100),
@@ -317,11 +317,11 @@ CREATE TABLE dbo.usp_yjjk_yjqr_log
 )
 GO
 
-PRINT '表 usp_yjjk_yjqr_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_yjqr_log 创建成功！'
 GO
 
 -- =============================================
--- 3. usp_yjjk_getbrxx 日志表
+-- 3. up_interface_RIS_WN_getbrxx 日志表
 -- =============================================
 IF OBJECT_ID('dbo.up_interface_RIS_WN_Getbrxx_log', 'U') IS NOT NULL
     DROP TABLE dbo.up_interface_RIS_WN_Getbrxx_log
