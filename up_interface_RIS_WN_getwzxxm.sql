@@ -36,7 +36,7 @@ BEGIN
     SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
-        IF @brlb IS NULL OR @brlb <> 3
+        IF @brlb IS NULL OR (@brlb <> 3 AND @brlb <> 2)
             RAISERROR('病人类别不正确！必须为3（体检）', 16, 1);
 
         DECLARE @Where NVARCHAR(MAX) = N'

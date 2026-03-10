@@ -24,8 +24,8 @@ BEGIN
     SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
-        IF @brlb IS NULL OR (@brlb <> 3 AND @brlb <> 9)
-            RAISERROR('病人类别不正确！必须为3（体检）或9', 16, 1)
+        IF @brlb IS NULL OR (@brlb <> 3 AND @brlb <> 2)
+            RAISERROR('病人类别不正确！必须为3（体检）或2', 16, 1)
 
         IF ISNULL(LTRIM(RTRIM(@code)), '') = ''
             RAISERROR('code不能为空！', 16, 1)    

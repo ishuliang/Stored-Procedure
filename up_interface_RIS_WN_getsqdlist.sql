@@ -56,7 +56,7 @@ BEGIN
     IF NULLIF(LTRIM(RTRIM(@zxksdm)), '') IS NOT NULL  BEGIN SET @Where += ' AND dd.InterfaceCode1 = @zxksdm'                    END
     IF NULLIF(LTRIM(RTRIM(@xmdm)), '') IS NOT NULL    BEGIN SET @Where += ' AND dfi.InterfaceCode1 = @xmdm'                     END
     IF NULLIF(LTRIM(RTRIM(@cureno)), '') IS NOT NULL   BEGIN SET @Where += ' AND vp.PatientCode = @cureno'                       END
-    IF NULLIF(LTRIM(RTRIM(@cardno)), '') IS NOT NULL  BEGIN SET @Where += ' AND vp.PatientCode = @cardno'                       END
+    -- IF NULLIF(LTRIM(RTRIM(@cardno)), '') IS NOT NULL  BEGIN SET @Where += ' AND vp.PatientCode = @cardno'                       END
 
 
 
@@ -95,7 +95,7 @@ INNER JOIN DictFeeItem dfi         ON dfi.ID_FeeItem = vpfi.ID_FeeItem
 INNER JOIN DictDepart dd           ON dd.ID_Depart = vpfi.ID_Depart
 LEFT  JOIN DictUser dictOperate    ON dictOperate.ID_User = vpfi.ID_Operate
 WHERE vp.IS_State < 6
-AND dd.ServiceProviderType in (''PACS'',''LIS'')
+AND dd.ServiceProviderType in (''WN'',''LIS'')
   AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
   AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
   AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
@@ -104,14 +104,13 @@ AND dd.ServiceProviderType in (''PACS'',''LIS'')
 
     BEGIN TRY
         EXEC sp_executesql @SQL, 
-            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100), @cardno VARCHAR(100)',
+            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100)',
             @hzxm=@hzxm,
             @rq1_dt=@rq1_dt,
             @rq2_dt=@rq2_dt,
             @zxksdm=@zxksdm,
             @xmdm=@xmdm,
-            @cureno=@cureno,
-            @cardno=@cardno
+            @cureno=@cureno
         SET @Rows = @@ROWCOUNT
 
         
