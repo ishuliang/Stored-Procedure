@@ -1,7 +1,7 @@
 -- 获取病人未执行医嘱项目
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getwzxxm
 (
-    @brlb     INT           = NULL,        
+    @brlb     VARCHAR(100)  = NULL,        
     @patid    VARCHAR(100)  = NULL,       
     @curno    VARCHAR(100)  = NULL,       
     @rq1      VARCHAR(20)   = NULL,       
@@ -15,6 +15,7 @@ BEGIN
 
     DECLARE 
         @LogId     INT = 0,
+        @Debug     BIT = 1, -- 调试模式，0为关闭，1为开启
         @rq1_dt  DATETIME2 = TRY_CAST(
                            RTRIM(
                              STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
@@ -48,7 +49,7 @@ BEGIN
           AND ISNULL(vpfi.IS_Suspend,'''') <> ''2''
           ';
 
-        IF ISNULL(@curno, '')  <> ''   SET @Where += ' AND vpfi.barCode = @curno';
+        IF ISNULL(@curno, '') <> '' AND @brlb <> 2   SET @Where += ' AND vpfi.barCode = @curno';
        
         IF @rq1_dt IS NOT NULL         SET @Where += ' AND vpfi.RegisterTime >= @rq1_dt';
         IF @rq2_dt IS NOT NULL         SET @Where += ' AND vpfi.RegisterTime <= @rq2_dt'; 
@@ -107,6 +108,17 @@ BEGIN
         LEFT  JOIN DictUser dictOperate         ON dictOperate.ID_User = vpfi.ID_Operate
         LEFT  JOIN DictSampleType dst           ON dfi.ID_SampleType = dst.ID_SampleType
         ' + @Where;
+
+        IF @Debug = 1
+        BEGIN
+            DECLARE @DebugSQL NVARCHAR(MAX) = @SQL
+            SET @DebugSQL = REPLACE(@DebugSQL, '@patid',  ISNULL('''' + @patid + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@curno',  ISNULL('''' + @curno + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@rq1_dt', ISNULL('''' + CONVERT(VARCHAR, @rq1_dt, 120) + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@rq2_dt', ISNULL('''' + CONVERT(VARCHAR, @rq2_dt, 120) + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@sqdxh',  ISNULL('''' + @sqdxh + '''', 'NULL'))
+            PRINT @DebugSQL
+        END
 
         EXEC sp_executesql @SQL,
             N'@patid VARCHAR(100), @curno VARCHAR(100), @rq1_dt DATETIME, @rq2_dt DATETIME2, @sqdxh VARCHAR(100)',
