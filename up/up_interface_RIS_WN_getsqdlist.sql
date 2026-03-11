@@ -1,10 +1,17 @@
 
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getsqdlist
 (
-    @brlb            VARCHAR(100) = NULL,   -- 1=门诊 2=住院 3=体检
-    @cureno          VARCHAR(100) = NULL,   -- 就诊流水号（当前住院的首页序号）
-    @execDeptCode    VARCHAR(100) = NULL,   -- 执行科室
-    @rq1             VARCHAR(100) = NULL,   -- 开始日期yyyy-mm-dd
+    @Brlb            VARCHAR(100) = NULL,   -- 1=门诊 2=住院 3=体检
+    @Cureno          VARCHAR(100) = NULL,   -- 就诊流水号（当前住院的首页序号）
+    @Cardno          VARCHAR(100) = NULL,
+    @hzxm            VARCHAR(100) = NULL,
+    @ksdm            VARCHAR(100) = NULL,
+    @bqdm            VARCHAR(100) = NULL,
+    @zxksdm          VARCHAR(100) = NULL,
+    @xmdm            VARCHAR(100) = NULL,
+    @xmlb            VARCHAR(100) = NULL,
+    @xmstatus        VARCHAR(100) = NULL,
+    @Rq1             VARCHAR(100) = NULL,   -- 开始日期yyyy-mm-dd
     @rq2             VARCHAR(100) = NULL   -- 结束日期yyyy-mm-dd
 )
 AS
@@ -21,30 +28,30 @@ BEGIN
         @Debug       BIT         = 1  -- 调试模式，0为关闭，1为开启
 
     -- 插入日志记录
-    INSERT INTO dbo.up_interface_RIS_WN_getsqdlist_log (brlb, cureno, execDeptCode, rq1, rq2)
-    VALUES (@brlb, @cureno, @execDeptCode, @rq1, @rq2);
+    INSERT INTO dbo.up_interface_RIS_WN_getsqdlist_log (brlb, cureno, cardno, hzxm, ksdm, bqdm, zxksdm, xmdm, xmlb, xmstatus, rq1, rq2)
+    VALUES (@Brlb, @Cureno, @Cardno, @hzxm, @ksdm, @bqdm, @zxksdm, @xmdm, @xmlb, @xmstatus, @Rq1, @rq2);
     SET @LogId = SCOPE_IDENTITY();
 
 
     BEGIN TRY
 
-        IF @brlb IS NULL OR (@brlb <> 2)
+        IF @Brlb IS NULL OR (@Brlb <> 2)
             RAISERROR('病人类别不正确！超声检查为2', 16, 1)
 
 
 
-        IF @rq1 IS NOT NULL AND LTRIM(RTRIM(@rq1)) <> ''
+        IF ISNULL(@Rq1, '') <> ''
         BEGIN 
-            SET @Where += ' AND vpfi.RegisterTime >= @rq1'                      
+            SET @Where += ' AND vpfi.RegisterTime >= @Rq1'                      
         END
-        IF @rq2 IS NOT NULL AND LTRIM(RTRIM(@rq2)) <> ''
+        IF ISNULL(@rq2, '') <> ''
         BEGIN 
             SET @Where += ' AND vpfi.RegisterTime <= @rq2'                      
         END
 
-        IF NULLIF(LTRIM(RTRIM(@cureno)), '') IS NOT NULL   
+        IF ISNULL(@Cureno, '') <> ''
         BEGIN 
-            SET @Where += ' AND vp.PatientCode = @cureno'                       
+            SET @Where += ' AND vp.PatientCode = @Cureno'                       
         END
 
         -- ==================== 主查询SQL ====================
@@ -56,26 +63,31 @@ BEGIN
                 ''THIS4''                                     AS OrderPlacer,
                 ''''                                          AS PlacerOrderType,
                 ''''                                          AS PlacerOrderNumber,
-                ''''                                          AS PlacerOrderStatus,
+                ''未处理''                                     AS PlacerOrderStatus,
                 vpfi.applyId                                  AS 申请单号,
                 vp.PatientCode                                AS 病员号,
                 ''''                                          AS 病人卡号,
                 vp.PatientName                                AS 病人姓名,
-                vp.Sex                                        AS 病人性别,
+                CASE 
+                            WHEN vp.SEX IS NULL OR vp.SEX = '''' THEN ''''
+                            WHEN vp.SEX = ''1'' THEN ''男''
+                            WHEN vp.SEX = ''2'' THEN ''女''
+                            ELSE vp.SEX
+                                                            END AS 病人性别,
                 ISNULL(vp.Age,0)                              AS 病人年龄,
                 ''''                                          AS 病人科室,
                 ''''                                          AS 病人病区,
                 ''''                                          AS 病人床号,
                 ISNULL(dictOperate.Number, '''')             AS 主治医生,
                 vpfi.FeeItemName                              AS 检查项目,
-                ''''                                          AS 检查状态,
+                ''未处理''                                          AS 检查状态,
                 ''''                                          AS 结算状态,
                 vpfi.RegisterTime                             AS 请求日期,
-                ''0''                                         AS 门急诊标志,
-                vpfi.FeeItemName                              AS 申请单名称,
-                ''''                                          AS 收费状态,
+                ''NULL''                                         AS 门急诊标志,
+                ''体检超声''                              AS 申请单名称,
+                ''已执行''                                          AS 收费状态,
                 vpfi.applyId                                  AS 条形码,
-                ''''                                          AS 临床路径标志
+                ''0''                                          AS 临床路径标志
             FROM VocaPatient vp
             INNER JOIN VocaPatientFeeItem vpfi ON vp.ID_Patient = vpfi.ID_Patient
             INNER JOIN DictFeeItem dfi         ON dfi.ID_FeeItem = vpfi.ID_FeeItem
@@ -93,17 +105,17 @@ BEGIN
         BEGIN
             DECLARE @DebugSQL NVARCHAR(MAX) = @SQL
 
-            SET @DebugSQL = REPLACE(@DebugSQL, '@rq1',  ISNULL('''' + @rq1 + '''' , 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@Rq1',  ISNULL('''' + @Rq1 + '''' , 'NULL'))
             SET @DebugSQL = REPLACE(@DebugSQL, '@rq2',  ISNULL('''' + @rq2 + '''' , 'NULL'))
-            SET @DebugSQL = REPLACE(@DebugSQL, '@cureno',   ISNULL('''' + @cureno + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@Cureno',   ISNULL('''' + @Cureno + '''', 'NULL'))
             PRINT @DebugSQL
         END                
 
         EXEC sp_executesql @SQL, 
-            N'@rq1 VARCHAR(100), @rq2 VARCHAR(100), @cureno VARCHAR(100)',
-            @rq1=@rq1,
+            N'@Rq1 VARCHAR(100), @rq2 VARCHAR(100), @Cureno VARCHAR(100)',
+            @Rq1=@Rq1,
             @rq2=@rq2,
-            @cureno=@cureno
+            @Cureno=@Cureno
 
         SET @Rows = @@ROWCOUNT
 

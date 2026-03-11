@@ -2,12 +2,11 @@
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getwzxxm
 (
     @brlb     VARCHAR(100)  = NULL,        
-    @patid    VARCHAR(100)  = NULL,       
-    @curno    VARCHAR(100)  = NULL,       
+    @PatientID    VARCHAR(100)  = NULL,       
+    @CureNo    VARCHAR(100)  = NULL,
+    @Sqdh    VARCHAR(100)  = NULL,       
     @rq1      VARCHAR(20)   = NULL,       
-    @rq2      VARCHAR(20)   = NULL,       
-    @sqdxh    VARCHAR(100)  = NULL,       
-    @yexh     VARCHAR(100)  = NULL        
+    @rq2      VARCHAR(20)   = NULL      
 )
 AS
 BEGIN
@@ -16,24 +15,13 @@ BEGIN
     DECLARE 
         @LogId     INT = 0,
         @Debug     BIT = 1, -- 调试模式，0为关闭，1为开启
-        @rq1_dt  DATETIME2 = TRY_CAST(
-                           RTRIM(
-                             STUFF(STUFF(STUFF(@rq1, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
-                           ) AS DATETIME2),
-        @rq2_dt  DATETIME2 = TRY_CAST(
-                           RTRIM(
-                             STUFF(STUFF(STUFF(@rq2, 9, 0, ' '), 7, 0, '-'), 5, 0, '-')
-                           ) AS DATETIME2);
-
-
-    DECLARE 
         @Rows      INT  = 0,
         @Success   BIT  = 1,
         @ErrorMsg  NVARCHAR(1000) = NULL;
 
     -- 插入日志记录
-    INSERT INTO dbo.up_interface_RIS_WN_getwzxxm_log (brlb, patid, curno, rq1, rq2, sqdxh, yexh)
-    VALUES (@brlb, @patid, @curno, @rq1, @rq2, @sqdxh, @yexh);
+    INSERT INTO dbo.up_interface_RIS_WN_getwzxxm_log (brlb, patid, curno, rq1, rq2, sqdh)
+    VALUES (@brlb, @PatientID, @CureNo, @rq1, @rq2, @Sqdh);
     SET @LogId = SCOPE_IDENTITY();
 
     BEGIN TRY
@@ -49,23 +37,22 @@ BEGIN
           AND ISNULL(vpfi.IS_Suspend,'''') <> ''2''
           ';
 
-        IF ISNULL(@curno, '') <> '' AND @brlb <> 2   SET @Where += ' AND vpfi.barCode = @curno';
-       
-        IF @rq1_dt IS NOT NULL         SET @Where += ' AND vpfi.RegisterTime >= @rq1_dt';
-        IF @rq2_dt IS NOT NULL         SET @Where += ' AND vpfi.RegisterTime <= @rq2_dt'; 
+        IF ISNULL(@CureNo, '') <> '' AND @brlb <> 2   SET @Where += ' AND vpfi.barCode = @CureNo';
+        
+        IF ISNULL(@rq1, '') <> ''         SET @Where += ' AND vpfi.RegisterTime >= @rq1';
+        IF ISNULL(@rq2, '') <> ''         SET @Where += ' AND vpfi.RegisterTime <= @rq2'; 
 		
-        IF @sqdxh IS NOT NULL 
-			AND @sqdxh <> '0'
-			AND LTRIM(RTRIM(@sqdxh)) <> ''
+        IF @Sqdh IS NOT NULL 
+			AND @Sqdh <> '0'
+			AND LTRIM(RTRIM(@Sqdh)) <> ''
 		BEGIN
-			SET @Where += ' AND vpfi.applyId = @sqdxh';
+			SET @Where += ' AND vpfi.applyId = @Sqdh';
 		END
 
-        IF @patid IS NOT NULL 
-			AND @patid <> '-1'
-			AND LTRIM(RTRIM(@patid)) <> ''
+        IF ISNULL(@PatientID, '') <> ''
+			AND @PatientID <> '-1'
 		BEGIN
-			SET @Where += ' AND vp.patientcode = @patid';
+			SET @Where += ' AND vp.patientcode = @PatientID';
 		END
 
         DECLARE @SQL NVARCHAR(MAX) = N'
@@ -85,9 +72,9 @@ BEGIN
                 ''''                                                    AS CheckTime,
                 ISNULL(dictOperate.Number, '''')                        AS ApplyDocCode,
                 ''632''                                                    AS ApplyDept,
-                dd.InterfaceCode1                                       AS ExecDept,
+                ''024''                                       AS ExecDept,
                 ''0''                                                   AS Status,
-                ''0''                                                    AS ItemType,
+                ''1''                                                    AS ItemType,
                 ''0''                                                   AS AddType,
                 ''1''                                                   AS chargeFlag,
                 ''0''                                                   AS Mjzbz,
@@ -100,7 +87,9 @@ BEGIN
                 ''''                                                    AS SerialNo,
                 ''-1''                                                  AS ApplyNo,
                 ISNULL(dictOperate.Number, '''')                        AS OperatorCode,
-                ISNULL(dictOperate.UserName, '''')                      AS OperatorName
+                ISNULL(dictOperate.UserName, '''')                      AS OperatorName,
+                ''腹部''                                                    AS BW,
+                dfi.FeeItemName                                                    AS JCXM
             FROM VocaPatient vp
             INNER JOIN VocaPatientFeeItem vpfi      ON vp.ID_Patient = vpfi.ID_Patient
             INNER JOIN DictFeeItem dfi              ON dfi.ID_FeeItem = vpfi.ID_FeeItem
@@ -112,21 +101,21 @@ BEGIN
         IF @Debug = 1
         BEGIN
             DECLARE @DebugSQL NVARCHAR(MAX) = @SQL
-            SET @DebugSQL = REPLACE(@DebugSQL, '@patid',  ISNULL('''' + @patid + '''', 'NULL'))
-            SET @DebugSQL = REPLACE(@DebugSQL, '@curno',  ISNULL('''' + @curno + '''', 'NULL'))
-            SET @DebugSQL = REPLACE(@DebugSQL, '@rq1_dt', ISNULL('''' + CONVERT(VARCHAR, @rq1_dt, 120) + '''', 'NULL'))
-            SET @DebugSQL = REPLACE(@DebugSQL, '@rq2_dt', ISNULL('''' + CONVERT(VARCHAR, @rq2_dt, 120) + '''', 'NULL'))
-            SET @DebugSQL = REPLACE(@DebugSQL, '@sqdxh',  ISNULL('''' + @sqdxh + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@PatientID',  ISNULL('''' + @PatientID + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@CureNo',  ISNULL('''' + @CureNo + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@rq1', ISNULL('''' + @rq1 + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@rq2', ISNULL('''' + @rq2 + '''', 'NULL'))
+            SET @DebugSQL = REPLACE(@DebugSQL, '@Sqdh',  ISNULL('''' + @Sqdh + '''', 'NULL'))
             PRINT @DebugSQL
         END
 
         EXEC sp_executesql @SQL,
-            N'@patid VARCHAR(100), @curno VARCHAR(100), @rq1_dt DATETIME, @rq2_dt DATETIME2, @sqdxh VARCHAR(100)',
-            @patid  = @patid,
-            @curno  = @curno,
-            @rq1_dt = @rq1_dt,
-            @rq2_dt = @rq2_dt,
-            @sqdxh  = @sqdxh;
+            N'@PatientID VARCHAR(100), @CureNo VARCHAR(100), @rq1 VARCHAR(20), @rq2 VARCHAR(20), @Sqdh VARCHAR(100)',
+            @PatientID  = @PatientID,
+            @CureNo  = @CureNo,
+            @rq1  = @rq1,
+            @rq2  = @rq2,
+            @Sqdh  = @Sqdh;
 
         SET @Rows = @@ROWCOUNT;
 
