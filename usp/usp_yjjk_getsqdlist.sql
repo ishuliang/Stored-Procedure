@@ -1,5 +1,5 @@
 
-ALTER PROCEDURE dbo.up_interface_RIS_WN_getsqdlist
+ALTER PROCEDURE dbo.usp_yjjk_getsqdlist
 (
     @brlb      INT          = NULL,   -- 1=门诊 2=住院 3=体检
     @cureno     VARCHAR(100) = NULL,   -- 就诊流水号（当前住院的首页序号）
@@ -30,7 +30,7 @@ BEGIN
         @rq2_dt  DATETIME2 = NULL
 
     -- 插入日志记录
-    INSERT INTO dbo.up_interface_RIS_WN_getsqdlist_log (brlb, cureno, cardno, hzxm, ksdm, bqdm, zxksdm, xmdm, xmlb, xmstatus, rq1, rq2, jzbz)
+    INSERT INTO dbo.usp_yjjk_getsqdlist_log (brlb, cureno, cardno, hzxm, ksdm, bqdm, zxksdm, xmdm, xmlb, xmstatus, rq1, rq2, jzbz)
     VALUES (@brlb, @cureno, @cardno, @hzxm, @ksdm, @bqdm, @zxksdm, @xmdm, @xmlb, @xmstatus, @rq1, @rq2, @jzbz);
     SET @LogId = SCOPE_IDENTITY();
 
@@ -56,7 +56,7 @@ BEGIN
     IF NULLIF(LTRIM(RTRIM(@zxksdm)), '') IS NOT NULL  BEGIN SET @Where += ' AND dd.InterfaceCode1 = @zxksdm'                    END
     IF NULLIF(LTRIM(RTRIM(@xmdm)), '') IS NOT NULL    BEGIN SET @Where += ' AND dfi.InterfaceCode1 = @xmdm'                     END
     IF NULLIF(LTRIM(RTRIM(@cureno)), '') IS NOT NULL   BEGIN SET @Where += ' AND vp.PatientCode = @cureno'                       END
-    -- IF NULLIF(LTRIM(RTRIM(@cardno)), '') IS NOT NULL  BEGIN SET @Where += ' AND vp.PatientCode = @cardno'                       END
+    IF NULLIF(LTRIM(RTRIM(@cardno)), '') IS NOT NULL  BEGIN SET @Where += ' AND vp.PatientCode = @cardno'                       END
 
 
 
@@ -95,7 +95,7 @@ INNER JOIN DictFeeItem dfi         ON dfi.ID_FeeItem = vpfi.ID_FeeItem
 INNER JOIN DictDepart dd           ON dd.ID_Depart = vpfi.ID_Depart
 LEFT  JOIN DictUser dictOperate    ON dictOperate.ID_User = vpfi.ID_Operate
 WHERE vp.IS_State < 6
-AND dd.ServiceProviderType in (''WN'',''LIS'')
+AND dd.ServiceProviderType in (''PACS'',''LIS'')
   AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
   AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
   AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
@@ -104,13 +104,14 @@ AND dd.ServiceProviderType in (''WN'',''LIS'')
 
     BEGIN TRY
         EXEC sp_executesql @SQL, 
-            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100)',
+            N'@hzxm VARCHAR(100), @rq1_dt DATETIME2, @rq2_dt DATETIME2, @zxksdm VARCHAR(100), @xmdm VARCHAR(100), @cureno VARCHAR(100), @cardno VARCHAR(100)',
             @hzxm=@hzxm,
             @rq1_dt=@rq1_dt,
             @rq2_dt=@rq2_dt,
             @zxksdm=@zxksdm,
             @xmdm=@xmdm,
-            @cureno=@cureno
+            @cureno=@cureno,
+            @cardno=@cardno
         SET @Rows = @@ROWCOUNT
 
         
@@ -124,7 +125,7 @@ AND dd.ServiceProviderType in (''WN'',''LIS'')
     END CATCH
 
     -- 更新日志记录结果
-    UPDATE dbo.up_interface_RIS_WN_getsqdlist_log 
+    UPDATE dbo.usp_yjjk_getsqdlist_log 
     SET result = CASE WHEN @Success = 1 THEN '200' ELSE '-1' END,
         errormessage = CASE WHEN @Success = 1 THEN 'success' ELSE @ErrorMsg END
     WHERE id = @LogId;
@@ -132,4 +133,4 @@ AND dd.ServiceProviderType in (''WN'',''LIS'')
 END
 GO
 
-PRINT '存储过程 up_interface_RIS_WN_getsqdlist 创建成功！'
+PRINT '存储过程 usp_yjjk_getsqdlist 创建成功！'
