@@ -339,8 +339,29 @@ CREATE TABLE dbo.up_interface_RIS_WN_Getbrxx_log
 )
 GO
 
-PRINT '所有日志表创建完成！'
+-- =============================================
+-- 11. up_interface_RIS_WN_GetBrSqdinfo 日志表
+-- =============================================
+IF OBJECT_ID('dbo.up_interface_RIS_WN_GetBrSqdinfo_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_GetBrSqdinfo_log
 GO
 
+CREATE TABLE dbo.up_interface_RIS_WN_GetBrSqdinfo_log
+(
+    id           INT IDENTITY(1,1) PRIMARY KEY,
+    brlb         VARCHAR(100),      -- 病人类别 0 门诊 1 住院
+    patid        VARCHAR(100),      -- 病人本次检查号
+    cureno       VARCHAR(100),      -- 病人唯一号
+    sqdh         VARCHAR(100),      -- 申请单号
+    result       VARCHAR(10),
+    errormessage VARCHAR(MAX),
+    create_time  DATETIME DEFAULT GETDATE()
+)
+GO
 
+PRINT '表 up_interface_RIS_WN_GetBrSqdinfo_log 创建成功！'
+GO
+
+PRINT '所有日志表创建完成！'
+GO
 

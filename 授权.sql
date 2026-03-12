@@ -48,16 +48,16 @@ GRANT EXECUTE ON dbo.usp_yjjk_getsqdlist TO helian_yj;
 GRANT EXECUTE ON dbo.usp_yjjk_getsqdxx TO helian_yj;
 
 -- 授予查看源码权限
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_getbrxx TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_getbrlist TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_getwzxxm TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_yjqr TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_jcbrfb TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_yjjgfb TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_jg_huishou TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_bgztxg TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_getsqdlist TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.usp_yjjk_getsqdxx TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_getbrxx TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_getbrlist TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_getwzxxm TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_yjqr TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_jcbrfb TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_yjjgfb TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_jg_huishou TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_bgztxg TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_getsqdlist TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.usp_yjjk_getsqdxx TO helian_yj;
 
 -- 超声检查
 
@@ -72,18 +72,20 @@ GRANT EXECUTE ON dbo.up_interface_RIS_WN_jg_huishou TO helian_yj;
 GRANT EXECUTE ON dbo.up_interface_RIS_WN_bgztxg TO helian_yj;
 GRANT EXECUTE ON dbo.up_interface_RIS_WN_getsqdlist TO helian_yj;
 GRANT EXECUTE ON dbo.up_interface_RIS_WN_getsqdxx TO helian_yj;
+GRANT EXECUTE ON dbo.up_interface_RIS_WN_GetBrSqdinfo TO helian_yj;
+
 
 -- 授予查看源码权限
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getbrxx TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getbrlist TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getwzxxm TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_yjqr TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_jcbrfb TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_yjjgfb TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_jg_huishou TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_bgztxg TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getsqdlist TO helian_yj;
-GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getsqdxx TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getbrxx TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getbrlist TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getwzxxm TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_yjqr TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_jcbrfb TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_yjjgfb TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_jg_huishou TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_bgztxg TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getsqdlist TO helian_yj;
+-- GRANT VIEW DEFINITION ON dbo.up_interface_RIS_WN_getsqdxx TO helian_yj;
 
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_getbrxx_log TO helian_yj
@@ -96,3 +98,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_jg_huishou_log T
 GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_bgztxg_log TO helian_yj;
 GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_getsqdlist_log TO helian_yj;
 GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_getsqdxx_log TO helian_yj;
+GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.up_interface_RIS_WN_GetBrSqdinfo_log TO helian_yj;

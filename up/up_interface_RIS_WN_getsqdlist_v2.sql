@@ -1,4 +1,8 @@
 
+/*--------------------------------------------------------------------------------------
+<描述>： 获取病人申请单信息列表信息
+<测试>： exec up_interface_RIS_WN_getsqdlist '2','26030300001','024','2026-02-08','2026-03-11'
+--------------------------------------------------------------------------------------*/   
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getsqdlist
 (
     @Brlb            VARCHAR(100) = NULL,   -- 1=门诊 2=住院 3=体检
@@ -98,7 +102,7 @@ BEGIN
             INNER JOIN DictDepart dd           ON dd.ID_Depart = vpfi.ID_Depart
             LEFT  JOIN DictUser dictOperate    ON dictOperate.ID_User = vpfi.ID_Operate
             WHERE vp.IS_State < 6
-            AND dd.ServiceProviderType in (''WN'',''LIS'')
+            AND dd.ServiceProviderType in (''WN'')
               AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
               AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
               AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
