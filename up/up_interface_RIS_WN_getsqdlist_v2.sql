@@ -66,7 +66,7 @@ BEGIN
                 vp.PatientCode                                AS PatientID,
                 ''02''                                     AS SqdType,
                 ''未处理''                                     AS Status,
-                ''1''                                         AS Brlb, 
+                @Brlb                                         AS Brlb, 
                 vp.PatientCode                                AS HospNo,
                 vp.PatientCode                                AS CardNo,
                 vp.PatientName                                AS PatName,
@@ -112,7 +112,7 @@ BEGIN
         IF @Debug = 1
         BEGIN
             DECLARE @DebugSQL NVARCHAR(MAX) = @SQL
-
+            SET @DebugSQL = REPLACE(@DebugSQL, '@Brlb',  ISNULL('''' + @Brlb + '''' , 'NULL'))
             SET @DebugSQL = REPLACE(@DebugSQL, '@Rq1',  ISNULL('''' + @Rq1 + '''' , 'NULL'))
             SET @DebugSQL = REPLACE(@DebugSQL, '@rq2',  ISNULL('''' + @rq2 + '''' , 'NULL'))
             SET @DebugSQL = REPLACE(@DebugSQL, '@Cureno',   ISNULL('''' + @Cureno + '''', 'NULL'))
@@ -120,7 +120,9 @@ BEGIN
         END                
 
         EXEC sp_executesql @SQL, 
-            N'@Rq1 VARCHAR(100), @rq2 VARCHAR(100), @Cureno VARCHAR(100)',
+            N'@Brlb VARCHAR(100), @Rq1 VARCHAR(100), @rq2 VARCHAR(100), @Cureno VARCHAR(100)',
+        
+            @Brlb=@Brlb,
             @Rq1=@Rq1,
             @rq2=@rq2,
             @Cureno=@Cureno

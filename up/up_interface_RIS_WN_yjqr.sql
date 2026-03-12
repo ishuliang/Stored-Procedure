@@ -1,22 +1,21 @@
 
 ALTER PROCEDURE dbo.up_interface_RIS_WN_yjqr
 (
-    @brlb     VARCHAR(100) = NULL,   -- 病人类别（固定传3）
-    @patid    VARCHAR(100) = NULL,   -- 病人唯一标识
-    @curno    VARCHAR(100) = NULL,   -- 就诊流水号
+    @Brlb     VARCHAR(100) = NULL,   -- 病人类别（固定传3）
+    @PatientID    VARCHAR(100) = NULL,   -- 病人唯一标识
+    @cureno    VARCHAR(100) = NULL,   -- 就诊流水号
     @zxksdm   VARCHAR(100) = NULL,   -- 执行科室代码
     @zxysdm   VARCHAR(100) = NULL,   -- 执行医生代码
     @logno    VARCHAR(100) = NULL,   -- 医嘱唯一序号
     @applyno  VARCHAR(100) = NULL,
     @groupno  VARCHAR(100) = NULL,
-    @xmlb     VARCHAR(100) = NULL,
-    @xmdm     VARCHAR(100) = NULL,
+    @xmdm   VARCHAR(100) = NULL,
     @xmdj     VARCHAR(100) = NULL,
     @xmsl     VARCHAR(100) =  NULL,
+    @xmlb     VARCHAR(100) = NULL,
     @xmstatus VARCHAR(100) = NULL,   -- 0不处理 1确认 2拒绝 3撤销
     @sfflag   VARCHAR(100) = NULL,
-    @bgdh     VARCHAR(100) = NULL,   -- 报告单号
-    @bglx     VARCHAR(100) = NULL
+    @bgdh     VARCHAR(100) = NULL
 )
 AS
 BEGIN
@@ -29,11 +28,26 @@ BEGIN
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
 
     -- 插入日志记录
-    INSERT INTO dbo.up_interface_RIS_WN_yjqr_log (brlb, patid, curno, zxksdm, zxysdm, logno, applyno, groupno, xmlb, xmdm, xmdj, xmsl, xmstatus, sfflag, bgdh, bglx)
-    VALUES (@brlb, @patid, @curno, @zxksdm, @zxysdm, @logno, @applyno, @groupno, @xmlb, @xmdm, @xmdj, @xmsl, @xmstatus, @sfflag, @bgdh, @bglx);
+    INSERT INTO dbo.up_interface_RIS_WN_yjqr_log (Brlb, PatientID, cureno, zxksdm, zxysdm, logno, applyno, groupno, xmlb, xmdm, xmdj, xmsl, xmstatus, sfflag, bgdh)
+    VALUES (@Brlb, @PatientID, @cureno, @zxksdm, @zxysdm, @logno, @applyno, @groupno, @xmlb, @xmdm, @xmdj, @xmsl, @xmstatus, @sfflag, @bgdh);
     SET @LogId = SCOPE_IDENTITY();
 
-    SELECT 'T' AS BZ, '' AS errmsg
+    IF NOT EXISTS (SELECT 1 FROM dbo.interface_state  WHERE report_no = @bgdh and patient_code = @PatientID)
+    BEGIN
+        INSERT INTO dbo.interface_state 
+            (patient_code,update_time,apply_no,report_no,state)
+				VALUES (
+					@PatientID,
+                    GETDATE(),
+                    @groupno,
+                    @bgdh,
+                    -1
+				);
+    END
+
+    
+
+    SELECT 'T' AS Code, '' AS errmsg
 
     -- 更新日志记录结果
     UPDATE dbo.up_interface_RIS_WN_yjqr_log 

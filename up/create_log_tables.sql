@@ -14,9 +14,9 @@ GO
 CREATE TABLE dbo.up_interface_RIS_WN_bgztxg_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
-    brlb         VARCHAR(100),
-    patid        VARCHAR(100),
-    curno        VARCHAR(100),
+    Brlb         VARCHAR(100),
+    PatientID    VARCHAR(100),
+    CureNo       VARCHAR(100),
     ysdm         VARCHAR(100),
     bgzt         VARCHAR(100),
     txzt         VARCHAR(100),
@@ -24,8 +24,7 @@ CREATE TABLE dbo.up_interface_RIS_WN_bgztxg_log
     bgdh         VARCHAR(100),
     bglx         VARCHAR(100),
     logno        VARCHAR(100),
-    lis          VARCHAR(100),
-    txm          VARCHAR(100),
+    syscode      VARCHAR(100),
     result       VARCHAR(10),
     errormessage VARCHAR(MAX),
     create_time  DATETIME DEFAULT GETDATE()
@@ -293,9 +292,9 @@ GO
 CREATE TABLE dbo.up_interface_RIS_WN_yjqr_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
-    brlb         VARCHAR(100),
-    patid        VARCHAR(100),
-    curno        VARCHAR(100),
+    Brlb         VARCHAR(100),
+    PatientID    VARCHAR(100),
+    cureno       VARCHAR(100),
     zxksdm       VARCHAR(100),
     zxysdm       VARCHAR(100),
     logno        VARCHAR(100),
@@ -308,7 +307,6 @@ CREATE TABLE dbo.up_interface_RIS_WN_yjqr_log
     xmstatus     VARCHAR(100),
     sfflag       VARCHAR(100),
     bgdh         VARCHAR(100),
-    bglx         VARCHAR(100),
     result       VARCHAR(10),
     errormessage VARCHAR(MAX),
     create_time  DATETIME DEFAULT GETDATE()

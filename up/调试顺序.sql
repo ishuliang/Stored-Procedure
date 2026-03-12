@@ -14,3 +14,9 @@ exec up_interface_RIS_WN_GetBrSqdinfo '2', '26030300001' ,'26030300001',''
 
 -- 未执行医嘱项目
 exec up_interface_RIS_WN_getwzxxm '3','26030300001','26030300001',''
+
+
+
+select * from interface_state where patient_code= '26030300001'
+
+select IS_LisState,* from VocaPatientFeeItem where applyid='80000000096'
