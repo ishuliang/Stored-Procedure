@@ -59,7 +59,7 @@ BEGIN
                     ''体检超声''  as 收费项目,
                     '''' as JCBZ,
                     vpfi.FeeItemName  as JCXM,
-                    ''腹部''                                                    AS BW
+                    dfi.outFeeItemCode                                                    AS BW
                 
                 FROM VocaPatient vp
                 INNER JOIN VocaPatientFeeItem vpfi ON vp.ID_Patient = vpfi.ID_Patient

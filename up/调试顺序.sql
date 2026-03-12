@@ -3,6 +3,9 @@ TODO：
 2. 申请单要过滤掉非超声的项目
 3. getwzxxm BW, JCXM
 
+-- 0312
+1. 申请科室编码是156
+
 -- 病人基本信息   
 EXEC up_interface_RIS_WN_Getbrxx '2','1','26030300001','',''
 

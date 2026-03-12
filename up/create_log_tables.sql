@@ -223,25 +223,26 @@ PRINT '表 up_interface_RIS_WN_jcbrfb_log 创建成功！'
 GO
 
 -- =============================================
--- 8. up_interface_RIS_WN_jg_huishou 日志表
+-- 8. up_interface_RIS_WN_yjbghuishou 日志表
 -- =============================================
-IF OBJECT_ID('dbo.up_interface_RIS_WN_jg_huishou_log', 'U') IS NOT NULL
-    DROP TABLE dbo.up_interface_RIS_WN_jg_huishou_log
+IF OBJECT_ID('dbo.up_interface_RIS_WN_yjbghuishou_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_yjbghuishou_log
 GO
 
-CREATE TABLE dbo.up_interface_RIS_WN_jg_huishou_log
+CREATE TABLE dbo.up_interface_RIS_WN_yjbghuishou_log
 (
     id           INT IDENTITY(1,1) PRIMARY KEY,
-    repno        VARCHAR(100),
-    replb        VARCHAR(100),
-    syscode      VARCHAR(100),
+    Syscode      VARCHAR(100),
+    Applyno      VARCHAR(100),
+    Brlb         VARCHAR(100),
+    OrgApplyNo   VARCHAR(100),
     result       VARCHAR(10),
     errormessage VARCHAR(MAX),
     create_time  DATETIME DEFAULT GETDATE()
 )
 GO
 
-PRINT '表 up_interface_RIS_WN_jg_huishou_log 创建成功！'
+PRINT '表 up_interface_RIS_WN_yjbghuishou_log 创建成功！'
 GO
 
 -- =============================================
@@ -358,6 +359,42 @@ CREATE TABLE dbo.up_interface_RIS_WN_GetBrSqdinfo_log
 GO
 
 PRINT '表 up_interface_RIS_WN_GetBrSqdinfo_log 创建成功！'
+GO
+
+-- =============================================
+-- 12. up_interface_RIS_WN_jcbgfb 日志表
+-- =============================================
+IF OBJECT_ID('dbo.up_interface_RIS_WN_jcbgfb_log', 'U') IS NOT NULL
+    DROP TABLE dbo.up_interface_RIS_WN_jcbgfb_log
+GO
+
+CREATE TABLE dbo.up_interface_RIS_WN_jcbgfb_log
+(
+    id           INT IDENTITY(1,1) PRIMARY KEY,
+    idoc         VARCHAR(100),
+    iDiagnoseid  VARCHAR(100),
+    bw           VARCHAR(100),
+    jcjl         VARCHAR(100),
+    jcsj         VARCHAR(100),
+    cCheckType   VARCHAR(100),
+    cPatientName VARCHAR(100),
+    cReportCode  VARCHAR(500),
+    cSendDept    VARCHAR(MAX),
+    cSendDoctor  VARCHAR(100),
+    cPatientCode VARCHAR(100),
+    sex          VARCHAR(100),
+    cCheckDept   VARCHAR(100),
+    cCheckDoctor VARCHAR(100),
+    cBillCode    VARCHAR(100),
+    dReportDate  VARCHAR(100),
+    errorMeg     VARCHAR(100),
+    result       VARCHAR(10),
+    errormessage VARCHAR(MAX),
+    create_time  DATETIME DEFAULT GETDATE()
+)
+GO
+
+PRINT '表 up_interface_RIS_WN_jcbgfb_log 创建成功！'
 GO
 
 PRINT '所有日志表创建完成！'

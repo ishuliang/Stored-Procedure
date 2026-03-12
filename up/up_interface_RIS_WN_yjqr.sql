@@ -26,13 +26,15 @@ BEGIN
         @ErrorMsg VARCHAR(MAX) = NULL,    -- 完整错误信息
         @ReturnRows INT = 0,
         @Success BIT = 1;                 -- 执行是否成功（1成功，0失败）
+    
+    IF ISNULL(@bgdh, '') = ''  PRINT '报告单号不能为空'
 
     -- 插入日志记录
     INSERT INTO dbo.up_interface_RIS_WN_yjqr_log (Brlb, PatientID, cureno, zxksdm, zxysdm, logno, applyno, groupno, xmlb, xmdm, xmdj, xmsl, xmstatus, sfflag, bgdh)
     VALUES (@Brlb, @PatientID, @cureno, @zxksdm, @zxysdm, @logno, @applyno, @groupno, @xmlb, @xmdm, @xmdj, @xmsl, @xmstatus, @sfflag, @bgdh);
     SET @LogId = SCOPE_IDENTITY();
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.interface_state  WHERE report_no = @bgdh and patient_code = @PatientID)
+    IF NOT EXISTS (SELECT 1 FROM dbo.interface_state  WHERE apply_no = @groupno and patient_code = @PatientID)
     BEGIN
         INSERT INTO dbo.interface_state 
             (patient_code,update_time,apply_no,report_no,state)
@@ -44,6 +46,35 @@ BEGIN
                     -1
 				);
     END
+
+    IF @xmstatus = '1'  
+    BEGIN
+        UPDATE dbo.interface_state
+                SET 
+                    state       = 0,
+                    state_name  = N'登记',
+                    update_time = GETDATE(),
+                    service_provider_type = 'WN',
+                    param_type  = '2'  ,
+                    report_no   = @bgdh
+                WHERE 
+                    apply_no = @groupno and patient_code = @PatientID;
+    END
+    
+    IF @xmstatus = '3'  
+    BEGIN
+        UPDATE dbo.interface_state
+                SET 
+                    state       = 2,
+                    state_name  = N'取消登记',
+                    update_time = GETDATE(),
+                    param_type  = '2'  ,
+                    report_no   = @bgdh
+                WHERE 
+                    apply_no = @groupno and patient_code = @PatientID;
+    END
+    
+
 
     
 

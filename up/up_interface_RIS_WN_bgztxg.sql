@@ -6,7 +6,7 @@ ALTER PROCEDURE dbo.up_interface_RIS_WN_bgztxg
     @ysdm       VARCHAR(100) = NULL,  -- 报告医生工号
     @bgzt       VARCHAR(10)  = NULL,  -- 报告状态
     @txzt       VARCHAR(10)  = NULL,  -- 图像状态
-    @jczt       VARCHAR(100) = NULL,  -- 检查状态 20签收——对应贾维斯的登记，30入库，40初审，50终审，60发布——对应贾维斯的出报告
+    @jczt       VARCHAR(100) = NULL,  -- 检查状态 20签收——对应贾维斯的登记，30入库，40初审，50终审，60发布
     @bgdh       VARCHAR(100) = NULL,  -- 报告单号
     @bglx       VARCHAR(100) = NULL,  -- 报告类型
     @logno      VARCHAR(100) = NULL,  -- 明细序号集合
@@ -37,41 +37,9 @@ BEGIN
         IF ISNULL(@bgdh, '')  = ''
             RAISERROR('报告单号不能为空', 16, 1)
 
-        -- 报告状态校验
-        
-        IF ISNULL(@jczt, '') = ''
-            RAISERROR(N'检查状态(@jczt)不能为空', 16, 1);
 
-
-        -- ==================== 业务处理：插入逻辑（无修改） ====================
-        IF @jczt = 20
-        BEGIN
-            -- LIS 系统：按 bar_code 防重
-            IF UPPER(@syscode) = 'Ris'
-            BEGIN
-            
-                IF NOT EXISTS (SELECT 1 FROM dbo.interface_state  WHERE report_no = @bgdh and patient_code = @PatientID )
-                    RAISERROR(N'该报告单号未确认!', 16, 1, @bgdh);
-				UPDATE dbo.interface_state
-                SET 
-                    state       = 0,
-                    state_name  = N'登记',
-                    update_time = GETDATE(),
-                    service_provider_type = 'WN',
-                    param_type  = '2'  -- LIS系统固定param_type为3
-                WHERE 
-                    report_no = @bgdh and patient_code = @PatientID;
-				
-            END
-            ELSE
-            BEGIN
-                RAISERROR(N'无法处理该报告单号 %s + 患者编码 %s', 16, 1, @bgdh, @PatientID);
-            
-            END
-            
-        END
         -- ==================== 核心修改：更新逻辑（按@lis区分条件） ====================
-        ELSE IF @jczt = 60
+        IF @jczt = 60
         BEGIN
         
             IF UPPER(@syscode) = 'Ris'
@@ -84,7 +52,7 @@ BEGIN
                     state       = 1,
                     state_name  = N'已审核',
                     update_time = GETDATE(),
-                    param_type  = '3'  -- LIS系统固定param_type为3
+                    param_type  = '2'  -- LIS系统固定param_type为3
                 WHERE 
                     report_no = @bgdh and patient_code = @PatientID;
 

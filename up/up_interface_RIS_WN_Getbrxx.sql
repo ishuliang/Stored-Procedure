@@ -67,8 +67,7 @@ BEGIN
                             ELSE vp.SEX
                         END AS Sex,
                         
-                        ''632''                   AS ApplyDeptCode,
-                        ''山西省肿瘤体检中心''              AS ApplyDept,
+                        ''156''                   AS ApplyDeptCode,
                         ''''                      AS Ward,
                         ''''                      AS BedNo,
                         ISNULL(vp.IdentityCard, '''') AS CardNo,
