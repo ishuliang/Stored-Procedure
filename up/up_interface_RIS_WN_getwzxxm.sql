@@ -1,6 +1,7 @@
 /*--------------------------------------------------------------------------------------
 <描述>： 获取病人未执行医嘱项目
-<测试>： exec up_interface_RIS_WN_GetBrSqdinfo '1', '050219' ,'5386148',''
+<测试>： exec up_interface_RIS_WN_getwzxxm '2','26031300001','26031300001','','','80000000173'',''
+<日志>： select * from up_interface_RIS_WN_getwzxxm_log order by create_time desc
 --------------------------------------------------------------------------------------*/      
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getwzxxm
 (
@@ -33,7 +34,7 @@ BEGIN
 
         DECLARE @Where NVARCHAR(MAX) = N'
         WHERE vp.IS_State < 6
-          AND dd.ServiceProviderType in (''PACS'',''LIS'',''WN'')
+          AND dd.ServiceProviderType in (''WN'')
           AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
           AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
           AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''

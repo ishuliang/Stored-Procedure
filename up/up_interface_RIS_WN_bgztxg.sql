@@ -1,3 +1,8 @@
+/*--------------------------------------------------------------------------------------
+<描述>： 报告状态修改：对应贾维斯出报告
+<测试>： exec up_interface_RIS_WN_bgztxg  '2','26031300001','26031300001','001','1','1','60','2142254','CD','170','Ris'
+<日志>： select * from up_interface_RIS_WN_bgztxg_log order by create_time desc
+--------------------------------------------------------------------------------------*/  
 ALTER PROCEDURE dbo.up_interface_RIS_WN_bgztxg
 (
     @Brlb       VARCHAR(2)   = NULL,  -- 病人类别

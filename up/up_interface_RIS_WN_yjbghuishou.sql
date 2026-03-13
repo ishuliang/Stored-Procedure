@@ -1,3 +1,9 @@
+/*--------------------------------------------------------------------------------------
+<描述>： 医技报告回收
+<测试>： exec up_interface_RIS_WN_yjbghuishou 'RIS','2142254','2','80000000170'
+<日志>： select * from up_interface_RIS_WN_yjbghuishou_log order by create_time desc
+--------------------------------------------------------------------------------------*/  
+
 ALTER PROCEDURE dbo.up_interface_RIS_WN_yjbghuishou
 (
     @Syscode   VARCHAR(100) = NULL,   -- 调用系统：LIS / RIS
@@ -40,9 +46,7 @@ BEGIN
                     update_time = GETDATE()
                 WHERE 
                     apply_no = @OrgApplyNo;
-        SET @UpdateCount = @@ROWCOUNT;
-        IF @UpdateCount != 1
-            RAISERROR('没有找到该报告数据！', 16, 1)
+
             
         SELECT 'T' AS Code, '' AS errmsg
 

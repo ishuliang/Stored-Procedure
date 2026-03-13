@@ -1,4 +1,7 @@
--- 检查报告发布
+/*--------------------------------------------------------------------------------------
+<描述>： 检查报告发布
+<日志>： select * from up_interface_RIS_WN_jcbgfb_log order by create_time desc
+--------------------------------------------------------------------------------------*/  
 ALTER PROCEDURE dbo.up_interface_RIS_WN_jcbgfb
 (   
     @xml VARCHAR(MAX) = NULL,

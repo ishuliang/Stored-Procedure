@@ -1,7 +1,8 @@
 
 /*--------------------------------------------------------------------------------------
 <描述>： 获取病人申请单信息列表信息
-<测试>： exec up_interface_RIS_WN_getsqdlist '2','26030300001','024','2026-02-08','2026-03-11'
+<测试>： exec up_interface_RIS_WN_getsqdlist '2','26031300001','','','','','024','','','','2026-02-08','2026-03-14'
+<日志>： select * from up_interface_RIS_WN_getsqdlist_log order by create_time desc
 --------------------------------------------------------------------------------------*/   
 ALTER PROCEDURE dbo.up_interface_RIS_WN_getsqdlist
 (

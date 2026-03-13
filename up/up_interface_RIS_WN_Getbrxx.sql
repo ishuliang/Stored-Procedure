@@ -1,6 +1,7 @@
 /*--------------------------------------------------------------------------------------
 <描述>： 获取病人基本信息
-<测试>： exec up_interface_RIS_WN_GetBrSqdinfo '1', '050219' ,'5386148',''
+<测试>： EXEC up_interface_RIS_WN_Getbrxx '2','1','26031300001','',''
+<日志>： select * from up_interface_RIS_WN_Getbrxx_log order by create_time desc
 --------------------------------------------------------------------------------------*/   
 ALTER PROCEDURE dbo.up_interface_RIS_WN_Getbrxx
 (
