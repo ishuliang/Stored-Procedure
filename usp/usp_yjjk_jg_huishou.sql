@@ -55,8 +55,8 @@ BEGIN
                 WHERE 
                     report_no = @repno;
         SET @UpdateCount = @@ROWCOUNT;
-        IF @UpdateCount != 1
-            RAISERROR('没有找到该报告数据！', 16, 1)
+        -- IF @UpdateCount != 1
+        --     RAISERROR('没有找到该报告数据！', 16, 1)
         DELETE FROM dbo.ReportData WHERE applyno = @repno;  -- applyno对应报告单号（repno）
         SELECT 'T' AS BZ, '' AS errmsg
 

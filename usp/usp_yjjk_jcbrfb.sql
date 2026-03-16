@@ -58,7 +58,7 @@ BEGIN
         -- 根据patient_code来修改报告单号（必传）
         UPDATE dbo.interface_state
                 SET report_no = @repno
-                WHERE patient_code = @patid;
+                WHERE patient_code = @patid and service_provider_type = 'LIS';
         SET @UpdateCount = @@ROWCOUNT;
         
         SELECT 'T' AS BZ, '' AS errmsg
