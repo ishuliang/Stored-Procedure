@@ -51,6 +51,9 @@ BEGIN
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM dbo.interface_state  WHERE report_no = @bgdh and patient_code = @PatientID )
                     RAISERROR(N'该报告单号不存在!', 16, 1, @bgdh);
+
+                IF EXISTS(SELECT 1 FROM VocaPatient WHERE IS_State >= 5 AND PatientCode = @PatientID)
+                    RAISERROR('体检系统已开始总检,不能发布报告!如需修改请电话联系体检中心!', 16, 1)
                 
                 UPDATE dbo.interface_state
                 SET 

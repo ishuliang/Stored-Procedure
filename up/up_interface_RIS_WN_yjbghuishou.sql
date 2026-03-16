@@ -34,8 +34,8 @@ BEGIN
     BEGIN TRY
 
         -- ==================== 总检状态校验 ====================
-        -- IF EXISTS(SELECT 1 FROM VocaPatient WHERE IS_State >= 5 AND PatientCode = @patientCode)
-        --     RAISERROR('体检系统已开始总检,不能回收报告!如需修改请电话联系体检中心!', 16, 1)
+        IF EXISTS(SELECT 1 FROM VocaPatient vp LEFT JOIN VocaPatientFeeItem vpfi on vp.ID_Patient = vpfi.ID_Patient WHERE vp.IS_State >= 5 AND vpfi.applyId = @OrgApplyNo)
+            RAISERROR('体检系统已开始总检,不能回收报告!如需修改请电话联系体检中心!', 16, 1)
 
         -- ==================== 业务处理：执行回收（你原来的逻辑）===================
         -- 修改报告状态为撤销报告

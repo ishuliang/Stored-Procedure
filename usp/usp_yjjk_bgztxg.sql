@@ -87,6 +87,9 @@ BEGIN
                 IF @txm IS NULL OR LTRIM(RTRIM(@txm)) = ''
                     RAISERROR(N'LIS系统更新时条形码(@txm)不能为空', 16, 1);
                 
+                IF EXISTS(SELECT 1 FROM VocaPatient vp LEFT JOIN VocaPatientFeeItem vpfi on vp.ID_Patient = vpfi.ID_Patient WHERE vp.IS_State >= 5 AND vpfi.BarCode = @txm)
+                    RAISERROR('体检系统已开始总检,不能回收报告!如需修改请电话联系体检中心!', 16, 1)
+            
                 -- 按bar_code更新记录
                 UPDATE dbo.interface_state
                 SET 
