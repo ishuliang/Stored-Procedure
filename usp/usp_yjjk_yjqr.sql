@@ -33,20 +33,6 @@ BEGIN
     VALUES (@brlb, @patid, @curno, @zxksdm, @zxysdm, @logno, @applyno, @groupno, @xmlb, @xmdm, @xmdj, @xmsl, @xmstatus, @sfflag, @bgdh, @bglx);
     SET @LogId = SCOPE_IDENTITY();
 
-    if @xmstatus = '3'
-    BEGIN
-        UPDATE dbo.interface_state
-        SET 
-            state       = 1,
-            state_name  = N'取消登记',
-            update_time = GETDATE(),
-            param_type  = '3'  -- LIS系统固定param_type为3
-        WHERE 
-            bar_code = @bgdh;
-    END
-
-    
-
 
     SELECT 'T' AS BZ, '' AS errmsg
 

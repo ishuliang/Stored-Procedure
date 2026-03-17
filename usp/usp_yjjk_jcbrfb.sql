@@ -54,20 +54,7 @@ BEGIN
     VALUES (@repno, @reqno, @syxh, @patid, @blh, @cardno, @hzxm, @sex, @age, @sjksdm, @sjksmc, @bqdm, @bqmc, @cwdm, @sjysdm, @sjysxm, @sjrq, @replb, @replbmc, @reprq, @xtbz, @jcbw, @jcysdm, @jcysxm, @jcksdm, @jcksmc, @isly, @wjbz, @instname, @techno, @cyrq, @shys, @crbz, @shysdm, @bbjsrq, @memo);
     SET @LogId = SCOPE_IDENTITY();
 
-    BEGIN TRY
-        -- 根据patient_code来修改报告单号（必传）
-        UPDATE dbo.interface_state
-                SET report_no = @repno
-                WHERE patient_code = @patid and service_provider_type = 'LIS';
-        SET @UpdateCount = @@ROWCOUNT;
-        
-        SELECT 'T' AS BZ, '' AS errmsg
-    END TRY
-    BEGIN CATCH
-        SET @Success = 0
-        SET @ErrorMsg = ERROR_MESSAGE()
-        SELECT 'F' AS BZ, @ErrorMsg AS errmsg
-    END CATCH
+    SELECT 'T' AS BZ, '' AS errmsg
     
     -- 更新日志记录结果
     UPDATE dbo.usp_yjjk_jcbrfb_log 
