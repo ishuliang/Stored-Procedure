@@ -62,6 +62,7 @@ BEGIN
         -- ==================== 主查询SQL ====================
         SET @SQL = N'
             SELECT
+                ''0'' as JCBZ,
                 ''2''                                         AS PIDAuthority,
                 vp.PatientCode                                AS CureNo,
                 vp.PatientCode                                AS PatientID,

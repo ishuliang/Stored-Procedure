@@ -76,7 +76,7 @@ BEGIN
                 ''''                                                    AS CheckTime,
                 ISNULL(dictOperate.Number, '''')                        AS ApplyDocCode,
                 ''632''                                                    AS ApplyDept,
-                ''024''                                       AS ExecDept,
+                dd.InterfaceCode1                                       AS ExecDept,
                 ''0''                                                   AS Status,
                 ''1''                                                    AS ItemType,
                 ''0''                                                   AS AddType,

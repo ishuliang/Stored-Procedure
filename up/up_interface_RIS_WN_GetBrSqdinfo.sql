@@ -56,7 +56,7 @@ BEGIN
                     ISNULL(dictOperate.UserName, '''') as ApplyDoctorName,
                     vpfi.RegisterTime as ApplyTime,
                     ''体检超声''  as 收费项目,
-                    '''' as JCBZ,
+                    ''0'' as JCBZ,
                     vpfi.FeeItemName  as JCXM,
                     dfi.outFeeItemCode                                                    AS BW
                 
