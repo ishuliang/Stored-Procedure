@@ -57,16 +57,29 @@ BEGIN
             BEGIN
                 IF @txm IS NULL OR LTRIM(RTRIM(@txm)) = ''
                     RAISERROR(N'LIS系统登记时条形码(@txm)不能为空', 16, 1);
-                IF EXISTS (SELECT 1 FROM dbo.interface_state  WHERE bar_code = @txm )
-                    RAISERROR(N'该条形码 %s 已存在签收记录，请勿重复插入', 16, 1, @txm);
-					
-				INSERT INTO dbo.interface_state (patient_code,state,state_name,update_time,bar_code,param_type,service_provider_type,report_no)
-				VALUES (
-					@patid,0,N'登记',GETDATE(),
-                    @txm,
-                    '3',
-                    @lis,@bgdh
-				);
+                IF EXISTS (SELECT 1 FROM dbo.interface_state WHERE bar_code = @txm)
+                BEGIN
+                    -- 条码已存在，更新状态为登记
+                    UPDATE dbo.interface_state
+                    SET 
+                        state       = 0,
+                        state_name  = N'登记',
+                        update_time = GETDATE(),
+                        patient_code = @patid,
+                        report_no   = @bgdh
+                    WHERE bar_code = @txm;
+                END
+                ELSE
+                BEGIN
+                    -- 条码不存在，插入新记录
+                    INSERT INTO dbo.interface_state (patient_code,state,state_name,update_time,bar_code,param_type,service_provider_type,report_no)
+                    VALUES (
+                        @patid,0,N'登记',GETDATE(),
+                        @txm,
+                        '3',
+                        @lis,@bgdh
+                    );
+                END
             END
             ELSE
             BEGIN

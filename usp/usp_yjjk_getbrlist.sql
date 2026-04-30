@@ -78,7 +78,7 @@ BEGIN
         INNER JOIN DictDepart dd          ON dd.ID_Depart = vpfi.ID_Depart
         WHERE vp.IS_State < 6
         AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
-        AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
+        AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'', ''2'')
         AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
         AND ISNULL(vpfi.IS_Suspend,'''') <> ''2'''
       + @Where

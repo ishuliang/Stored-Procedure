@@ -83,7 +83,7 @@ BEGIN
                     INNER JOIN DictFeeItem dfi ON dfi.ID_FeeItem = vpfi.ID_FeeItem 
                     WHERE vp.IS_State < 6 -- 未完成总检
                         AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2)) -- 收费或部分收费 or 团体收费且不能时拟退状态
-                        AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
+                        AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'', ''2'')
                         AND ISNULL(vpfi.IS_Examine,''0'') <> ''3'' -- 非弃检【0/null:未发生 1:已检(有一个检查项开检就为已检) 2:延期(针对收费项)3:弃检】
                         AND ISNULL(vpfi.IS_Suspend,'''') <> ''2''
                         and vp.PatientCode IS NOT NULL

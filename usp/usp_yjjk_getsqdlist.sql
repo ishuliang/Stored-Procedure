@@ -97,7 +97,7 @@ LEFT  JOIN DictUser dictOperate    ON dictOperate.ID_User = vpfi.ID_Operate
 WHERE vp.IS_State < 6
 AND dd.ServiceProviderType in (''PACS'',''LIS'')
   AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
-  AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
+  AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'', ''2'')
   AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
   AND ISNULL(vpfi.IS_Suspend,'''') <> ''2'' '
   + ISNULL(@Where, N'')

@@ -4,7 +4,8 @@ GO
 -- =============================================
 -- 获取体检影像申请单信息（PACS专用）
 -- =============================================
-IF OBJECT_ID('dbo.usp_yjjk_getsqdxx', 'P') IS NOT NULL
+IF OBJECT_ID('dbo.
+', 'P') IS NOT NULL
     DROP PROCEDURE dbo.usp_yjjk_getsqdxx
 GO
 
