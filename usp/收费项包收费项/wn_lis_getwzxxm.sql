@@ -58,7 +58,7 @@ LEFT JOIN DictFeeItem dfi_new
     AND s.Value IS NOT NULL
     AND dfi.InterfaceCode2 = '1'
 WHERE vp.IS_State < 6
-  AND dd.ServiceProviderType IN ('LIS')
+  AND (dd.ServiceProviderType IN ('LIS') or dfi.InterfaceCode1= '10000193')
   AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
   AND ISNULL(vpfi.IS_LisState,'0') IN ('0','1','2')
   AND ISNULL(vpfi.IS_Examine,'0') <> '3'

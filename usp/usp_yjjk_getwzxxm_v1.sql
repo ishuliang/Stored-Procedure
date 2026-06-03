@@ -1,9 +1,3 @@
-/*--------------------------------------------------------------------------------------
-<描述>： 获取病人未执行医嘱项目
-<测试>： EXEC usp_yjjk_getwzxxm  '3', '-1', '8000211000', '2024012300:00:00', '2026012223:59:59', '0', '0'
-<日志>： select * from up_interface_RIS_WN_bgztxg_log order by create_time desc
-<日志>： select * from usp_yjjk_getwzxxm_log order by create_time desc
---------------------------------------------------------------------------------------*/  
 ALTER PROCEDURE dbo.usp_yjjk_getwzxxm
 (
     @brlb     INT           = NULL,        
@@ -137,4 +131,3 @@ BEGIN
     WHERE id = @LogId;
 
 END
-GO
