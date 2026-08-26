@@ -1,4 +1,5 @@
-ALTER VIEW wn_lis_getwzxxm AS
+
+ALTER VIEW [dbo].[wn_lis_getwzxxm] AS
 SELECT
     -- 以下字段用于查询
     vpfi.barCode as barCode,
@@ -14,7 +15,10 @@ SELECT
     COALESCE(s.Value, dfi.InterfaceCode1) AS ItemCode,
     COALESCE(dfi_new.FeeItemName, dfi.FeeItemName) AS ItemName,
 
-    vpfi.FactPrice * 1.0 / 100 AS Price,
+    CASE WHEN dfi.InterfaceCode2 = '1'
+         THEN ISNULL(dfi_new.price,0) * 1.0 / 100
+         ELSE vpfi.FactPrice * 1.0 / 100
+    END AS Price,
     '1' AS ItemQty,
     '' AS ItemUnit,
     vpfi.RegisterTime AS ApplyTime,
@@ -63,3 +67,5 @@ WHERE vp.IS_State < 6
   AND ISNULL(vpfi.IS_LisState,'0') IN ('0','1','2')
   AND ISNULL(vpfi.IS_Examine,'0') <> '3'
   AND ISNULL(vpfi.IS_Suspend,'') <> '2'
+  and vpfi.IS_Consum='0'
+GO
