@@ -1,9 +1,17 @@
+USE [sxzlhems]
+GO
+/****** Object:  StoredProcedure [dbo].[up_interface_RIS_WN_getwzxxm]    Script Date: 2026/9/3 21:41:57 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
 /*--------------------------------------------------------------------------------------
 <描述>： 获取病人未执行医嘱项目
 <测试>： exec up_interface_RIS_WN_getwzxxm '2','26031300001','26031300001','','','80000000173'',''
 <日志>： select * from up_interface_RIS_WN_getwzxxm_log order by create_time desc
 --------------------------------------------------------------------------------------*/      
-ALTER PROCEDURE dbo.up_interface_RIS_WN_getwzxxm
+ALTER PROCEDURE [dbo].[up_interface_RIS_WN_getwzxxm]
 (
     @brlb     VARCHAR(100)  = NULL,        
     @PatientID    VARCHAR(100)  = NULL,       
@@ -36,7 +44,7 @@ BEGIN
         WHERE vp.IS_State < 6
           AND dd.ServiceProviderType in (''WN'')
           AND (vpfi.IS_FeeState IN (1,4) OR (vpfi.IS_FeeType = 1 AND ISNULL(vpfi.IS_FeeState,0) <> 2))
-          AND ISNULL(vpfi.IS_LisState,''0'') IN (''0'',''1'')
+          AND ISNULL(vpfi.IS_LisState,''0'')  <> ''3''
           AND ISNULL(vpfi.IS_Examine,''0'') <> ''3''
           AND ISNULL(vpfi.IS_Suspend,'''') <> ''2''
           ';
@@ -58,7 +66,7 @@ BEGIN
 		BEGIN
 			SET @Where += ' AND vp.patientcode = @PatientID';
 		END
-
+		-- vpfi.FactPrice * 1.0 / 100                              AS Price,
         DECLARE @SQL NVARCHAR(MAX) = N'
             SELECT
                 vp.PatientCode                                          AS PatientID,
@@ -68,7 +76,7 @@ BEGIN
                 vpfi.applyId                                                    AS GroupNo,
                 dfi.InterfaceCode1                                      AS ItemCode,
                 dfi.FeeItemName                                         AS ItemName,
-                vpfi.FactPrice * 1.0 / 100                              AS Price,
+                ''0''                              AS Price,
                 ''1''                                                   AS ItemQty,
                 ''''                                                    AS ItemUnit,
                 vpfi.RegisterTime                                       AS ApplyTime,
@@ -137,4 +145,3 @@ BEGIN
     WHERE id = @LogId;
 
 END
-GO
